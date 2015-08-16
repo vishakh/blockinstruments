@@ -67,16 +67,19 @@ contract Instrument {
     
     // The receiver validates the contract with the same parameters
     function validate(address sender, address receiver, address underlier, bytes32 operator, uint strike) returns (bool val) {
-        //if (msg.sender!=sender)
-        //{
-        //    return false;
-        //}
+        /*if (msg.sender!=sender)
+        {
+            return false;
+        }
         
         if (//_premise.underlier != underlier ||
             _premise.operator != strToOperator( operator ) ||
             _premise.strike != strike){
             return false;
-        }
+        }*/
+        
+        // Disabling validation until compound conditions are implemented.
+        // Life is too cumbersome otherwise.
         
         return true;
     }
@@ -105,7 +108,7 @@ contract Instrument {
         return true;
     }
     
-    //if condition is met on maturity, allow receiver to claim from escrow
+    //if condition is not met on maturity, allow sender to reclaim from escrow
     function recall() returns (bool val) {
         
         if( isConditionMet() )
