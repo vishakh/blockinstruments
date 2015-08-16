@@ -55,29 +55,26 @@ contract Instrument {
         _premise = SimplePremise(underlier, strToOperator(operator), strike, maturity);
         _transaction = OneToOneTransaction(sender, receiver, msg.value);
         
-        if(sender != msg.sender)
+        /*if(sender != msg.sender)
         {
             suicide(sender);
-        }
+        }*/
     }
     
     // The receiver validates the contract with the same parameters
     function validate(address sender, address receiver, address underlier, bytes32 operator, uint strike) returns (bool val) {
-        if (msg.sender!=sender)
-        {
-            return false;
-        } else if (
-            _premise.underlier != underlier ||
+        //if (msg.sender!=sender)
+        //{
+        //    return false;
+        //}
+        
+        if (_premise.underlier != underlier ||
             _premise.operator != strToOperator( operator ) ||
-            _premise.strike != strike)
-        {
+            _premise.strike != strike){
             return false;
-        }
-        else
-        {
-            return true;
         }
         
+        return true;
     }
     
     // If not validated, allow sender to withdra
@@ -87,6 +84,7 @@ contract Instrument {
             return false;
         }
         suicide(_transaction.sender);
+        _transaction.sender.send(this.balance);
         return true;
     }
     
@@ -99,7 +97,7 @@ contract Instrument {
         }
         _isActive = false;
         _isComplete = true;
-        suicide(_transaction.receiver);
+        _transaction.receiver.send(this.balance);
         return true;
     }
     
