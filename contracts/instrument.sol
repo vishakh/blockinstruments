@@ -7,24 +7,26 @@ contract Instrument {
     //parameters
     SimplePremise       _premise;
     OneToOneTransaction _transaction;
+    SimplePremise[][]   _compoundPremise;
     
     //Hack variables to get around struct instantiation issues.
-    Underlier           _underlier;
+    Underlier           _underlier1;
+    Underlier           _underlier2;
     
     enum UnderlierType { gasLimit, difficulty, accountBalance, scalar }
     
     struct Underlier {
         UnderlierType   utype;
-        address         addrressValue;
+        address         addressValue;
         uint            scalarValue;
     }
     
     enum Operator { LT, GT, EQ, NEQ, LEQ, GEQ }
 
     struct SimplePremise {
-        Underlier   underlier;  // something being bet on
+        Underlier   lhs;  // something being bet on
+        Underlier   rhs;
         Operator    operator;   // equality or inequality
-        uint        strike;     // right-hand side
         uint        maturity;   // block number to use as maturity
     }
     
@@ -34,39 +36,49 @@ contract Instrument {
         uint        value;      // the stake
     }
     
-    
+    function Instrument(){}
     
     //The sender constructs the contract
     // Funds
     // Senders address
     // Receivers address
     // 
-    function Instrument(
+    function Initialize(
         address sender, 
         address receiver, 
-        bytes32 underlierType, 
-        address underlierAddress,
-        uint    underlierValue,
+        bytes32 lhsUnderlierType, 
+        address lhsUnderlierAddress,
+        uint    lhsUnderlierValue,
+        bytes32 rhsUnderlierType, 
+        address rhsUnderlierAddress,
+        uint    rhsUnderlierValue,
         bytes32 operator, 
-        uint strike, 
-        uint maturity) 
+        uint maturity) returns (bool val)
     {
         _isActive = false;
         _isComplete = false;
         
-        UnderlierType parsedUnderlierType = strToUnderlierType(underlierType);
-        _underlier = Underlier(parsedUnderlierType, underlierAddress, underlierValue);
-        _premise = SimplePremise(_underlier, strToOperator(operator), strike, maturity);
+        //lhs
+        UnderlierType parsedUnderlierType = strToUnderlierType(lhsUnderlierType);
+        _underlier1 = Underlier(parsedUnderlierType, lhsUnderlierAddress, lhsUnderlierValue);
+        
+        //rhs
+        UnderlierType parsedUnderlierType2 = strToUnderlierType(rhsUnderlierType);
+        _underlier2 = Underlier(parsedUnderlierType2, rhsUnderlierAddress, rhsUnderlierValue);
+        
+        _premise = SimplePremise(_underlier1, _underlier2, strToOperator(operator), maturity);
         _transaction = OneToOneTransaction(sender, receiver, msg.value);
         
         /*if(sender != msg.sender)
         {
             suicide(sender);
         }*/
+        
+        return true;
     }
     
     // The receiver validates the contract with the same parameters
-    function validate(address sender, address receiver, address underlier, bytes32 operator, uint strike) returns (bool val) {
+    function validate() returns (bool val) {
         /*if (msg.sender!=sender)
         {
             return false;
@@ -170,33 +182,56 @@ contract Instrument {
     
     function isConditionMet() private returns (bool)
     {
+        if(!_isActive || _isComplete)
+        {
+            return false;
+        }
+        
         uint current_block      = block.number;
-        uint spot               = 0;
+        uint spot_lhs               = 0;
+        uint spot_rhs               = 0;
         
         if(current_block < _premise.maturity) {
             return false;
         }
         
-        if(_premise.underlier.utype == UnderlierType.gasLimit){
-            spot = block.gaslimit;
+        if(_premise.lhs.utype == UnderlierType.gasLimit){
+            spot_lhs = block.gaslimit;
         }
-        else if(_premise.underlier.utype == UnderlierType.difficulty){
-            spot = block.difficulty;
+        else if(_premise.lhs.utype == UnderlierType.difficulty){
+            spot_lhs = block.difficulty;
         }
-        if(_premise.underlier.utype == UnderlierType.accountBalance){
-            spot = _premise.underlier.addrressValue.balance;
+        else if(_premise.lhs.utype == UnderlierType.accountBalance){
+            spot_lhs = _premise.lhs.addressValue.balance;
         }
         else
         {
-            spot = _premise.underlier.scalarValue;
+            spot_lhs = _premise.lhs.scalarValue;
         }
         
-        if(( _premise.operator == Operator.EQ && spot == _premise.strike ) ||
-            ( _premise.operator == Operator.NEQ && spot == _premise.strike ) ||
-            ( _premise.operator == Operator.LEQ && spot <= _premise.strike ) ||
-            ( _premise.operator == Operator.GEQ && spot >= _premise.strike ) ||
-            ( _premise.operator == Operator.LT && spot < _premise.strike ) ||
-            ( _premise.operator == Operator.GT && spot > _premise.strike ) 
+        if(_premise.rhs.utype == UnderlierType.gasLimit){
+            spot_rhs = block.gaslimit;
+        }
+        else if(_premise.rhs.utype == UnderlierType.difficulty){
+            spot_rhs = block.difficulty;
+        }
+        else if(_premise.rhs.utype == UnderlierType.accountBalance){
+            spot_rhs = _premise.rhs.addressValue.balance;
+        }
+        else
+        {
+            spot_rhs = _premise.rhs.scalarValue;
+        }
+        
+        log1("lhs: ", bytes32(spot_lhs) );
+        log1("rhs: ", bytes32(spot_rhs) );
+        
+        if(( _premise.operator == Operator.EQ && spot_lhs == spot_rhs ) ||
+            ( _premise.operator == Operator.NEQ && spot_lhs == spot_rhs ) ||
+            ( _premise.operator == Operator.LEQ && spot_lhs <= spot_rhs ) ||
+            ( _premise.operator == Operator.GEQ && spot_lhs >= spot_rhs ) ||
+            ( _premise.operator == Operator.LT && spot_lhs < spot_rhs ) ||
+            ( _premise.operator == Operator.GT && spot_lhs > spot_rhs ) 
             )
         {
             return true;
