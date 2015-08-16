@@ -1,0 +1,156 @@
+Meteor.startup(function() {
+  Router.route('/', function () {
+    this.render('builder');
+  })
+
+  Template.builder.rendered = function() {
+    var Navbar = React.createClass({
+      render: function() {
+        return (
+          <nav id="navbar">
+
+          </nav>
+        )
+      }
+    })
+
+
+    function relMouseCoords(event){
+      var totalOffsetX = 0;
+      var totalOffsetY = 0;
+      var canvasX = 0;
+      var canvasY = 0;
+      var currentElement = this;
+
+      do{
+        totalOffsetX += currentElement.offsetLeft - currentElement.scrollLeft;
+        totalOffsetY += currentElement.offsetTop - currentElement.scrollTop;
+      }
+      while(currentElement = currentElement.offsetParent)
+
+      canvasX = event.pageX - totalOffsetX;
+      canvasY = event.pageY - totalOffsetY;
+
+      return {x:canvasX, y:canvasY}
+    }
+    HTMLCanvasElement.prototype.relMouseCoords = relMouseCoords;
+
+    function createArray(length) {
+      var arr = new Array(length || 0),
+      i = length;
+
+      if (arguments.length > 1) {
+        var args = Array.prototype.slice.call(arguments, 1);
+        while(i--) arr[length-1 - i] = createArray.apply(this, args);
+      }
+
+      return arr;
+    }
+    //contains every element on the board
+    var blocks = createArray(8,8)
+
+    var selectedBox;
+
+    function insertBlock(x, y, block) {
+      console.log("inset");
+    }
+
+    var Workspace = React.createClass({
+      getInitialState: function() {
+        return {
+          data: this.createGrid()
+        }
+      },
+      createIfBlock: function() {
+        var element = $('<button/>',
+        {
+          class: "ifBlock",
+          text: "If Block",
+          click: function () { showOptions(this)}
+        })
+
+        return element;
+      },
+      showOptions: function(element) {
+        var x = element.attr('column')
+        var y = element.attr('row')
+        console.log("here");
+        test = this.createIfBlock()
+        blocks[x][y] = test
+        insertBlock(x,y,test)
+      },
+      createGrid: function() {
+        var self = this;
+        var rows = 8,
+        cells = 8,
+        count = 0;
+
+        var i, j,
+        top = 0,
+        left = 0;
+
+        for (j = 0; j < rows; j += 1) {
+          for (i = 0; i < cells; i += 1) {
+            count += 1;
+
+            var opts = {
+              count: count,
+              row: j,
+              column: i
+            }
+
+            var div = (
+              <div id={"box"+opts.count} className="empty" row={opts.row} column={opts.column} onClick={this.showOptions}>
+                <p>{opts.count}</p>
+              </div>
+            )
+            blocks[i][j] = div
+          }
+        }
+
+        return blocks
+      },
+      render: function() {
+        console.log(this.state);
+
+        var workspace = (
+          <div id="workspace"> </div>
+        )
+        var fragment = $(document.createDocumentFragment())
+
+        this.state.data.forEach(function(column,x) {
+          column.forEach(function(cell,y) {
+            workspace.append(cell)
+            console.log(cell);
+          })
+        })
+
+        console.log(workspace[0])
+        workspace = workspace.html()
+        function createMarkup() { return {__html: workspace}; };
+        return (
+          <div id="workspace" dangerouslySetInnerHTML={createMarkup()}  />
+        )
+      },
+      componentDidMount: function() {
+        /*var canvas = $("#workspace")[0]
+        canvas.width = ($(window).width()*.85)
+        canvas.height = ($(window).height()*.90)*/
+      }
+    })
+
+    var Builder = React.createClass({
+      render: function(){
+        return (
+          <div id="builder-page" className="page">
+            <Navbar/>
+            <Sidebar/>
+            <Workspace/>
+          </div>
+        )
+      }
+    })
+
+    React.render(<Builder/>, document.body)
+  }
+})

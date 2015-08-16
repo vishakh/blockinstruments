@@ -1,0 +1,38 @@
+@import "../lib/imports";
+
+#builder-page {
+  #navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100-$pageHeight;
+    background-color: $black;
+    z-index: 1000;
+  }
+
+  #workspace {
+    position: absolute;
+    top: 100-$pageHeight;
+    left: 100-$pageWidth;
+    width: $pageWidth;
+    height: $pageHeight;
+    text-align: center;
+  }
+
+  #workspace th {
+    position: relative;
+    width: 12.5%;
+    height: 12.5%;
+    color: #9e9da4;
+    outline: 1px solid black;
+  }
+
+  .ifBlock {
+    background-color: #060;
+  }
+
+  .ltBlock  {
+    background-color: #d60;
+  }
+}

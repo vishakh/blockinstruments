@@ -1,0 +1,85 @@
+@import "../../lib/imports";
+
+#sidebar {
+  position: fixed;
+  top: 100-$pageHeight;
+  left: 0;
+  bottom: 0;
+  width: 100-$pageWidth;
+  background-color: $black;
+  z-index: 1000;
+
+  ul {
+    text-align: left;
+    display: block;
+    position: relative;
+    margin: 0;
+    padding: 0px 4px 48px 0;
+    list-style: none;
+    -webkit-box-shadow: 0 0 5px rgba(0, 0, 0, 0.15);
+    -moz-box-shadow: 0 0 5px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.15);
+
+    li {
+      font: bold 12px/18px sans-serif;
+      display: block;
+      margin-right: -4px;
+      position: relative;
+      padding: 15px 20px;
+      background: $grey;
+      color: $white;
+      cursor: pointer;
+      -webkit-transition: all 0.2s;
+      -moz-transition: all 0.2s;
+      -ms-transition: all 0.2s;
+      -o-transition: all 0.2s;
+      transition: all 0.2s;
+
+      &:hover {
+        background-color: darken(#660066, 10%)
+      }
+
+      ul.submenu {
+        padding: 0;
+        position: absolute;
+        top: 48px;
+        left: 0;
+        width: 150px;
+        -webkit-box-shadow: none;
+        -moz-box-shadow: none;
+        box-shadow: none;
+        display: none;
+        opacity: 0;
+        visibility: hidden;
+        -webkit-transiton: opacity 0.2s;
+        -moz-transition: opacity 0.2s;
+        -ms-transition: opacity 0.2s;
+        -o-transition: opacity 0.2s;
+        transition: opacity 0.2s;
+      }
+    }
+
+    &:hover {
+      color: #fff;
+
+      ul.submenu {
+        display: block;
+        opacity: 1;
+        visibility: visible;
+        z-index:3000;
+
+        li {
+          background: #660066;
+
+          &:hover { background-color: darken(#660066, 10%);}
+        }
+      }
+    }
+
+
+  }
+
+  .fa {
+    float: right;
+  }
+}
