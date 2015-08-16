@@ -8,28 +8,21 @@ contract Instrument {
     SimplePremise       _premise;
     OneToOneTransaction _transaction;
     
-    /*enum Unit { Ether, Wei, MegahashPerSec, TerahashPerSec }
-    enum ResourceType { gasPrice, hashRate, accountBalance, scalar }
+    //Hack variables to get around struct instantiation issues.
+    Underlier           _underlier;
     
-    struct Resource {
-        ResourceType    type;
-        address         addr;
+    enum UnderlierType { gasLimit, difficulty, accountBalance, scalar }
+    
+    struct Underlier {
+        UnderlierType   utype;
+        address         addrressValue;
+        uint            scalarValue;
     }
     
-    struct Value {
-        int         coeff;          // should be a float someday
-        Resource    resource;       // default 1 for scalars
-        Unit        units;          // for scaling
-    }
-    
-    struct Expression {
-        
-    }*/
-    
-    enum Operator { LT, GT, EQ, NEQ }
+    enum Operator { LT, GT, EQ, NEQ, LEQ, GEQ }
 
     struct SimplePremise {
-        address     underlier;  // something being bet on
+        Underlier   underlier;  // something being bet on
         Operator    operator;   // equality or inequality
         uint        strike;     // right-hand side
         uint        maturity;   // block number to use as maturity
@@ -48,11 +41,22 @@ contract Instrument {
     // Senders address
     // Receivers address
     // 
-    function Instrument(address sender, address receiver, address underlier, bytes32 operator, uint strike, uint maturity) 
+    function Instrument(
+        address sender, 
+        address receiver, 
+        bytes32 underlierType, 
+        address underlierAddress,
+        uint    underlierValue,
+        bytes32 operator, 
+        uint strike, 
+        uint maturity) 
     {
         _isActive = false;
         _isComplete = false;
-        _premise = SimplePremise(underlier, strToOperator(operator), strike, maturity);
+        
+        UnderlierType parsedUnderlierType = strToUnderlierType(underlierType);
+        _underlier = Underlier(parsedUnderlierType, underlierAddress, underlierValue);
+        _premise = SimplePremise(_underlier, strToOperator(operator), strike, maturity);
         _transaction = OneToOneTransaction(sender, receiver, msg.value);
         
         /*if(sender != msg.sender)
@@ -68,7 +72,7 @@ contract Instrument {
         //    return false;
         //}
         
-        if (_premise.underlier != underlier ||
+        if (//_premise.underlier != underlier ||
             _premise.operator != strToOperator( operator ) ||
             _premise.strike != strike){
             return false;
@@ -88,7 +92,7 @@ contract Instrument {
         return true;
     }
     
-    //if condition is met, transfer money and peform suicide.
+    //if condition is met on mzturity, allow receiver to claim from escrow
     function trigger() returns (bool val) {
         
         if( !isConditionMet() )
@@ -101,6 +105,19 @@ contract Instrument {
         return true;
     }
     
+    //if condition is met on maturity, allow receiver to claim from escrow
+    function recall() returns (bool val) {
+        
+        if( isConditionMet() )
+        {
+            return false;
+        }
+        _isActive = false;
+        _isComplete = true;
+        _transaction.sender.send(this.balance);
+        return true;
+    }
+    
     // ===== Utility functions ===== //
     
     function strToOperator(bytes32 str) private returns (Operator)
@@ -108,6 +125,14 @@ contract Instrument {
         if(str=='NEQ') 
         {
             return Operator.NEQ;
+        }
+        else if(str=='LEQ') 
+        {
+            return Operator.LEQ;
+        }
+        else if(str=='GEQ') 
+        {
+            return Operator.GEQ;
         }
         else if(str=='GT') 
         {
@@ -123,20 +148,52 @@ contract Instrument {
         }
     }
     
+    function strToUnderlierType(bytes32 str) private returns (UnderlierType)
+    {
+        if(str=='GASLIMIT'){
+            return UnderlierType.gasLimit;
+        }
+        else if(str=='DIFFICULTY'){
+            return UnderlierType.difficulty;
+        }
+        else if(str=='ACCBALANCE'){
+            return UnderlierType.accountBalance;
+        }
+        else
+        {
+            return UnderlierType.scalar;
+        }
+    }
+    
     function isConditionMet() private returns (bool)
     {
-        uint underlier_balance  = _premise.underlier.balance;
         uint current_block      = block.number;
+        uint spot               = 0;
         
-        if(current_block < _premise.maturity)
-        {
+        if(current_block < _premise.maturity) {
             return false;
         }
         
-        if(( _premise.operator == Operator.EQ && underlier_balance == _premise.strike ) ||
-            ( _premise.operator == Operator.NEQ && underlier_balance == _premise.strike ) ||
-            ( _premise.operator == Operator.LT && underlier_balance < _premise.strike ) ||
-            ( _premise.operator == Operator.GT && underlier_balance > _premise.strike ) 
+        if(_premise.underlier.utype == UnderlierType.gasLimit){
+            spot = block.gaslimit;
+        }
+        else if(_premise.underlier.utype == UnderlierType.difficulty){
+            spot = block.difficulty;
+        }
+        if(_premise.underlier.utype == UnderlierType.accountBalance){
+            spot = _premise.underlier.addrressValue.balance;
+        }
+        else
+        {
+            spot = _premise.underlier.scalarValue;
+        }
+        
+        if(( _premise.operator == Operator.EQ && spot == _premise.strike ) ||
+            ( _premise.operator == Operator.NEQ && spot == _premise.strike ) ||
+            ( _premise.operator == Operator.LEQ && spot <= _premise.strike ) ||
+            ( _premise.operator == Operator.GEQ && spot >= _premise.strike ) ||
+            ( _premise.operator == Operator.LT && spot < _premise.strike ) ||
+            ( _premise.operator == Operator.GT && spot > _premise.strike ) 
             )
         {
             return true;
