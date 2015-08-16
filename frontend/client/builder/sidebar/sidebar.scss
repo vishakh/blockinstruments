@@ -60,7 +60,7 @@
     }
 
     &:hover {
-      color: #fff;
+      color: #fff;break-word
 
       ul.submenu {
         display: block;
@@ -81,5 +81,23 @@
 
   .fa {
     float: right;
+  }
+
+  p {
+    word-break: break-all;
+  }
+
+  button {
+    background-color: #660066;
+    position: fixed;
+    border: none;
+    display: block;
+    width: 10%;
+    margin: 0 2.5%;
+    height: 10%;
+    color: $white;
+    font-family: 'Allan', cursive;
+    font-size: 30px;
+    bottom: 20px;
   }
 }
