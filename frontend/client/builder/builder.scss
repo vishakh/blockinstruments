@@ -9,30 +9,11 @@
     height: 100-$pageHeight;
     background-color: $black;
     z-index: 1000;
-  }
-
-  #workspace {
-    position: absolute;
-    top: 100-$pageHeight;
-    left: 100-$pageWidth;
-    width: $pageWidth;
-    height: $pageHeight;
     text-align: center;
-  }
 
-  #workspace th {
-    position: relative;
-    width: 12.5%;
-    height: 12.5%;
-    color: #9e9da4;
-    outline: 1px solid black;
-  }
-
-  .ifBlock {
-    background-color: #060;
-  }
-
-  .ltBlock  {
-    background-color: #d60;
+    h1 {
+      font-family: 'Allan', cursive;
+      font-size: 45px;
+    }
   }
 }

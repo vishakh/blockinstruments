@@ -1,0 +1,94 @@
+@import "../../lib/imports";
+
+#workspace {
+  position: absolute;
+  top: 100-$pageHeight;
+  left: 100-$pageWidth;
+  width: $pageWidth;
+  height: $pageHeight;
+  text-align: center;
+  table-layout: fixed;
+
+  tbody {
+    width: 100%;
+    height: 100%;
+  }
+
+  tr {
+    position: relative;
+    width: 12.5%;
+    height: 12.5%;
+  }
+
+  th {
+    position: relative;
+    width: 12.5%;
+    height: 12.5%;
+    color: #9e9da4;
+    outline: 1px solid black;
+  }
+
+  .ifBlock {
+    background-color: $blue;
+
+    p{
+      height: 50%;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+
+  .ltBlock  {
+    background-color: $orange;
+  }
+  .gtBlock  {
+    background-color: $orange;
+  }
+
+  .eqBlock  {
+    background-color: $orange;
+  }
+
+  .neqBlock  {
+    background-color: $orange;
+  }
+
+  .leqBlock  {
+    background-color: $orange;
+  }
+
+  .GeqBlock  {
+    background-color: $orange;
+  }
+
+  .orBlock  {
+    background-color: $yellow;
+  }
+
+
+  .abBlock  {
+    background-color: $green;
+  }
+
+  .glBlock  {
+    background-color: $green;
+  }
+
+  .cdBlock  {
+    background-color: $green;
+  }
+
+  .teBlock  {
+    background-color: $red;
+  }
+
+  .coBlock  {
+    background-color: $red;
+  }
+
+  input {
+    width: 100%;
+  }
+}
