@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html ng-app="dapp">
+<head>
+    <meta charset="utf-8">
+    <title>Dapp</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.2/angular.min.js"></script>
+    <script type="text/javascript" src="bower_components/bignumber.js/bignumber.min.js"></script>
+    <script type="text/javascript" src="bower_components/web3/dist/web3.js"></script>
+    <script>
+        angular.module("dapp", []);
+    </script>
+    <script src="app.js"></script>
+</head>
+
+<body ng-controller="mainController">
+    <div class="container">
+
+        <div class="jumbotron text-center">
+            <h1>
+                Coinbase
+                <span class="label label-info">
+                    {{ coinbase }}
+                </span>
+            </h1>
+        </div>
+
+        <div id="todo-form" class="row">
+            <div class="col-sm-8 col-sm-offset-2 text-center">
+                <form>
+
+                    <div class="jumbotron text-center">
+                        <h1>
+                            Balance
+                            <span class="label label-info">
+                                {{ balance }}
+                            </span>
+                        </h1>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" class="form-control input-lg text-center"
+                            placeholder="Enter address" ng-model="addressInput.text">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg" ng-click="getBalance(addressInput.text)">Get Balance</button>
+                    
+                    <div class="jumbotron text-center">
+                        <h1>
+                            Contract
+                            <span class="label label-info">
+                                {{ myContractInstance }}
+                            </span>
+                        </h1>
+                    </div>
+                    <div class="form-group">
+                        Sender
+                        <input type="text" class="form-control input-lg text-center"
+                            placeholder="Enter something to post" ng-model="contractInput.senderAddr">
+                        Receiver
+                        <input type="text" class="form-control input-lg text-center"
+                            placeholder="Enter something to post" ng-model="contractInput.receiverAddr">
+                        LHS Underlier Type
+                        <input type="text" class="form-control input-lg text-center"
+                            placeholder="Enter something to post" ng-model="contractInput.lhsUnderlierType">
+                        LHS Underlier Address
+                        <input type="text" class="form-control input-lg text-center"
+                            placeholder="Enter something to post" ng-model="contractInput.lhsUnderlierAddress">
+                        LHS Underlier Value
+                        <input type="text" class="form-control input-lg text-center"
+                            placeholder="Enter something to post" ng-model="contractInput.lhsUnderlierValue">
+                        RHS Underlier Type
+                        <input type="text" class="form-control input-lg text-center"
+                            placeholder="Enter something to post" ng-model="contractInput.rhsUnderlierType">
+                        RHS Address
+                        <input type="text" class="form-control input-lg text-center"
+                            placeholder="Enter something to post" ng-model="contractInput.rhsUnderlierAddress">
+                        RHS Value
+                        <input type="text" class="form-control input-lg text-center"
+                            placeholder="Enter something to post" ng-model="contractInput.rhsUnderlierValue">
+                        Operator
+                        <input type="text" class="form-control input-lg text-center"
+                            placeholder="Enter something to post" ng-model="contractInput.operator">
+                        Maturity
+                        <input type="text" class="form-control input-lg text-center"
+                            placeholder="Enter something to post" ng-model="contractInput.maturity">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg" ng-click="createContract(contractInput)">Post</button>
+                    
+                    <div class="jumbotron text-center">
+                        <h1>
+                            Block Data
+                            <span class="label label-info">
+                                {{ block }}
+                            </span>
+                        </h1>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" class="form-control input-lg text-center"
+                            placeholder="Enter block number" ng-model="blockInput.text">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg" ng-click="getBlock(blockInput.text)">Get Block Info</button>
+
+                </form>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>
