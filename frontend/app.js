@@ -21,6 +21,7 @@ angular.module('dapp', [])
             $scope.contractInput = {};
             var MyContract = web3.eth.contract(abiArray);
             $scope.myContractInstance = MyContract.new(
+                                            contractInput.senderAddr,
             								contractInput.receiverAddr, 
 									        contractInput.lhsUnderlierType, 
 									        contractInput.lhsUnderlierAddress,
