@@ -35,8 +35,8 @@ angular.module('dapp', [])
 									    );
         };
 
-        $scope.sendTransaction = function (trans) {
-        	console.log(trans);
+        $scope.testGas = function (addr) {
+            $scope.gas = web3.eth.estimateGas({ to: addr, data: byteCode });
         };
 
     });

@@ -43,6 +43,20 @@
                             placeholder="Enter address" ng-model="addressInput.text">
                     </div>
                     <button type="submit" class="btn btn-primary btn-lg" ng-click="getBalance(addressInput.text)">Get Balance</button>
+
+                    <div class="jumbotron text-center">
+                        <h1>
+                            Gas Estimate
+                            <span class="label label-info">
+                                {{ gas }}
+                            </span>
+                        </h1>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" class="form-control input-lg text-center"
+                            placeholder="Enter address" ng-model="address">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg" ng-click="testGas(address)">Post Contract</button>
                     
                     <div class="jumbotron text-center">
                         <h1>
@@ -84,7 +98,7 @@
                         <input type="text" class="form-control input-lg text-center"
                             placeholder="Enter something to post" ng-model="contractInput.maturity">
                     </div>
-                    <button type="submit" class="btn btn-primary btn-lg" ng-click="createContract(contractInput)">Post</button>
+                    <button type="submit" class="btn btn-primary btn-lg" ng-click="createContract(contractInput)">Deploy Contract</button>
                     
                     <div class="jumbotron text-center">
                         <h1>
