@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html ng-app="dapp">
+
+<head>
+    <meta charset="utf-8">
+    <title>BlockInstruments</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.2/angular.min.js"></script>
+    <script type="text/javascript" src="bower_components/bignumber.js/bignumber.min.js"></script>
+    <script type="text/javascript" src="bower_components/web3/dist/web3.js"></script>
+    <script>
+        angular.module("dapp", []);
+    </script>
+    <script src="app.js"></script>
+</head>
+
+<body ng-controller="mainController">
+    <h1>BlockInstruments Test Harness</h1>
+
+    <h2>Parameters</h2>
+
+    <p>Seller's Address</p>
+    <input type="text" ng-model="sellers_address" />
+
+    <p>Buyer's Address</p>
+    <input type="text" ng-model="buyers_address" />
+
+    <p>Contract Address</p>
+    <input type="text" ng-model="contract_address" />
+
+    <h2>Push new contract to blockchain</h2>
+
+    <p>Transaction hash: {{tx_hash}}</p>
+    <p>Address: {{contract_address}}</p>
+    <input type="submit" value="Push" ng-click="createContract(sellers_address)" />
+
+    <h2>Initialize contract</h2>
+
+    <p>HS Underlier Type</p>
+    <input type="text" ng-model="contractInput.lhsUnderlierType" value="111" />
+    <p>LHS Underlier Address</p>
+    <input type="text" ng-model="contractInput.lhsUnderlierAddress" />
+    <p>LHS Underlier Value</p>
+    <input type="text" ng-model="contractInput.lhsUnderlierValue" />
+    <p>RHS Underlier Type</p>
+    <input type="text" ng-model="contractInput.rhsUnderlierType" />
+    <p>RHS Address</p>
+    <input type="text" ng-model="contractInput.rhsUnderlierAddress" />
+    <p>RHS Value</p>
+    <input type="text" ng-model="contractInput.rhsUnderlierValue" />
+    <p>Operator</p>
+    <input type="text" ng-model="contractInput.operator" />
+    <p>Maturity</p>
+    <input type="text" ng-model="contractInput.maturity" />
+    <p></p>
+    <input type="submit" value="Initialize" ng-click="initializeContract(contractInput)" />
+
+
+    <h2>Get balance</h2>
+
+    <p>{{ balance }}</p>
+    <input type="submit" value="Push" ng-click="getBalance(sellers_address)" />
+
+</body>
+
+</html>
