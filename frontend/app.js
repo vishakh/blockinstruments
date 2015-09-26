@@ -4,7 +4,7 @@ angular.module('dapp', [])
 		$scope.sellers_address = "0xcfe479123aa3555a24260d2fc8691dcf3bdb18d9";
 		$scope.buyers_address = "0xe2553a57c54e4a98cfad1e698948f1ab68379580";
 		$scope.contract_address = "0xa6a2048e6e899ccc07d8840e942e30250f16d62a";
-		$scope.contractInput = { lhsUnderlierType: "ACCBALANCE", lhsUnderlierAddress: "0xcfe479123aa3555a24260d2fc8691dcf3…", lhsUnderlierValue: "0", rhsUnderlierType: "SCALAR", rhsUnderlierAddress: "0xcfe479123aa3555a24260d2fc8691dcf3…", rhsUnderlierValue: "1000000000000", operator: "EQ", maturity: "24520" };;
+		$scope.contractInput = { lhsUnderlierType: "ACCBALANCE", lhsUnderlierAddress: "0xcfe479123aa3555a24260d2fc8691dcf3…", lhsUnderlierValue: "0", rhsUnderlierType: "SCALAR", rhsUnderlierAddress: "0xcfe479123aa3555a24260d2fc8691dcf3…", rhsUnderlierValue: "1000000000000", operator: "EQ", maturity: "24520" };
 
         var web3 = require('web3');
 		web3.setProvider(new web3.providers.HttpProvider('http://localhost:56000'));
@@ -26,19 +26,7 @@ angular.module('dapp', [])
 
         $scope.createContract = function (sellers_address) {
             var MyContract = web3.eth.contract(abiArray);
-            /*$scope.myContractInstance = MyContract.new(
-                                            contractInput.senderAddr,
-            								contractInput.receiverAddr, 
-									        contractInput.lhsUnderlierType, 
-									        contractInput.lhsUnderlierAddress,
-									        contractInput.lhsUnderlierValue,
-									        contractInput.rhsUnderlierType, 
-									        contractInput.rhsUnderlierAddress,
-									        contractInput.rhsUnderlierValue,
-									        contractInput.operator, 
-									        contractInput.maturity,
-									        { data: byteCode, gas: 3000000, from: contractInput.senderAddr }
-									    );*/
+
 			$scope.myContractInstance = MyContract.new({
 					   data: byteCode,
 					   gas: 1000000,
@@ -88,7 +76,6 @@ angular.module('dapp', [])
 		$scope.initializeContract = function(contractInput) {
 			var MyContract = web3.eth.contract($scope.abiArray);
 			var myContractInstance = MyContract.at($scope.contract_address);
-			//var result = myContractInstance.recall.call("", {value: 1, gas: 200000});
 			var result = myContractInstance.Initialize.call(
 				$scope.sellers_address,
 				$scope.buyers_address,
@@ -102,6 +89,38 @@ angular.module('dapp', [])
 				contractInput.maturity,{value: 1, gas: 2000000});
 			console.log(result);
 
+		}
+
+		$scope.validate = function() {
+			var MyContract = web3.eth.contract($scope.abiArray);
+			var myContractInstance = MyContract.at($scope.contract_address);
+			var result = myContractInstance.validate.call({value: 1, gas: 2000000});
+			console.log(result);
+			$scope.validated = result;
+		}
+
+		$scope.withdraw = function() {
+			var MyContract = web3.eth.contract($scope.abiArray);
+			var myContractInstance = MyContract.at($scope.contract_address);
+			var result = myContractInstance.withdraw.call({value: 1, gas: 2000000});
+			console.log(result);
+			$scope.withdrawn = result;
+		}
+
+		$scope.trigger = function() {
+			var MyContract = web3.eth.contract($scope.abiArray);
+			var myContractInstance = MyContract.at($scope.contract_address);
+			var result = myContractInstance.trigger.call({value: 1, gas: 2000000});
+			console.log(result);
+			$scope.triggered = result;
+		}
+
+		$scope.recall = function() {
+			var MyContract = web3.eth.contract($scope.abiArray);
+			var myContractInstance = MyContract.at($scope.contract_address);
+			var result = myContractInstance.recall.call({value: 1, gas: 2000000});
+			console.log(result);
+			$scope.recalled = result;
 		}
 
     });
