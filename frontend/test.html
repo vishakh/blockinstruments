@@ -18,6 +18,16 @@
 <body ng-controller="mainController">
     <h1>BlockInstruments Test Harness</h1>
 
+    <h2>State</h2>
+
+    <p>
+        Default account: {{default_account}} <br />
+        Accounts: {{accounts}} <br/>
+        Balances: {{balances}} <br />
+        Block number: {{blocknumber}} <br />
+        Gas price: {{gasprice}} <br/>
+    </p>
+
     <h2>Parameters</h2>
 
     <p>Seller's Address</p>
@@ -83,8 +93,8 @@
 
     <h2>Get balance</h2>
 
-    <p>{{ balance }}</p>
-    <input type="submit" value="Push" ng-click="getBalance(sellers_address)" />
+    <p>{{ balance }} ETH</p>
+    <input type="submit" value="Get Balance" ng-click="getBalance(contract_address)" />
 
 </body>
 
