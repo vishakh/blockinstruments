@@ -2,7 +2,7 @@ angular.module('dapp', [])
     .controller('mainController', function ($scope, $http) {
 
         var web3 = require('web3');
-		web3.setProvider(new web3.providers.HttpProvider('http://localhost:56000'));
+		web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'));
 
 		//state
 		$scope.defaultAccount = web3.eth.defaultAccount;
@@ -18,7 +18,7 @@ angular.module('dapp', [])
 		$scope.gasprice = web3.fromWei(web3.eth.gasPrice, 'ether') + " ETH";
 
 		//parameters
-		$scope.sellers_address = "0x4f23b9370f2fa06a651913f3c7f278fa8ba33dee";
+		$scope.sellers_address = "0xcfe479123aa3555a24260d2fc8691dcf3bdb18d9";
 		$scope.buyers_address = "0xe2553a57c54e4a98cfad1e698948f1ab68379580";
 		$scope.contract_address = "0xa6a2048e6e899ccc07d8840e942e30250f16d62a";
 		$scope.contractInput = { lhsUnderlierType: "ACCBALANCE", lhsUnderlierAddress: "0x4f23b9370f2fa06a651913f3c7f278fa8ba33dee", lhsUnderlierValue: "0", rhsUnderlierType: "SCALAR", rhsUnderlierAddress: "0x4f23b9370f2fa06a651913f3c7f278fa8ba33dee", rhsUnderlierValue: "1000000000000", operator: "EQ", maturity: "24520" };
@@ -47,15 +47,10 @@ angular.module('dapp', [])
 					   gas: 1000000,
 					   from: sellers_address}, function(err, myContract){
 					    if(!err) {
-					       // NOTE: The callback will fire twice!
-					       // Once the contract has the transactionHash property set and once its deployed on an address.
-
-					       // e.g. check tx hash on the first call (transaction send)
 					       if(!myContract.address) {
-						   	console.log("Got tx hash.") // The hash of the transaction, which deploys the contract
+						   	console.log("Got tx hash.");
 						    console.log(myContract.transactionHash);
 							$scope.tx_hash = myContract.transactionHash;
-					       // check address on the second call (contract deployed)
 					       } else {
 							   console.log("Got contract address") // the contract address
 							   console.log(myContract.address);
@@ -63,9 +58,6 @@ angular.module('dapp', [])
 							   console.log(myContract);
 							   console.log("createContract() is done.");
 					       }
-
-					       // Note that the returned "myContractReturned" === "myContract",
-					       // so the returned "myContractReturned" object will also get the address set.
 					    }
 					else
 						{
@@ -73,15 +65,6 @@ angular.module('dapp', [])
 							console.log("createContract() is done.");
 						}
 					  });
-
-			/*var myContractInstance = MyContract.new({
-				data: byteCode,
-				gas: 1000000,
-				from: sellers_address});
-
-			$scope.tx_hash = myContractInstance.transactionHash;
-			$scope.contract_address = myContractInstance.address;
-			console.log(myContractInstance);*/
         };
 
         $scope.testGas = function (addr) {
@@ -103,14 +86,12 @@ angular.module('dapp', [])
 				contractInput.operator,
 				contractInput.maturity,{from: $scope.sellers_address, value: 1000, gas: 2000000});
 			console.log(result);
-			//result = web3.eth.sendTransaction({from: $scope.sellers_address, to: $scope.contract_address, value: web3.toWei(1, "ether")});
-			//console.log(result);
 		}
 
 		$scope.validate = function() {
 			var MyContract = web3.eth.contract($scope.abiArray);
 			var myContractInstance = MyContract.at($scope.contract_address);
-			var result = myContractInstance.validate.sendTransaction({from: $scope.sellers_address, value: 1, gas: 2000000});
+			var result = myContractInstance.validate.sendTransaction({from: $scope.sellers_address, value: 0, gas: 2000000});
 			console.log(result);
 			$scope.validated = result;
 		}
@@ -118,7 +99,7 @@ angular.module('dapp', [])
 		$scope.withdraw = function() {
 			var MyContract = web3.eth.contract($scope.abiArray);
 			var myContractInstance = MyContract.at($scope.contract_address);
-			var result = myContractInstance.withdraw.sendTransaction({from: $scope.sellers_address, value: 1, gas: 2000000});
+			var result = myContractInstance.withdraw.sendTransaction({from: $scope.sellers_address, value: 0, gas: 2000000});
 			console.log(result);
 			$scope.withdrawn = result;
 		}
@@ -126,7 +107,7 @@ angular.module('dapp', [])
 		$scope.trigger = function() {
 			var MyContract = web3.eth.contract($scope.abiArray);
 			var myContractInstance = MyContract.at($scope.contract_address);
-			var result = myContractInstance.trigger.sendTransaction({from: $scope.sellers_address, value: 1, gas: 2000000});
+			var result = myContractInstance.trigger.sendTransaction({from: $scope.sellers_address, value: 0, gas: 2000000});
 			console.log(result);
 			$scope.triggered = result;
 		}
@@ -137,8 +118,6 @@ angular.module('dapp', [])
 			var result = myContractInstance.recall.sendTransaction({from: $scope.sellers_address, to: $scope.contract_address, gas: 2000000});
 			console.log(result);
 			$scope.recalled = result;
-			//result = web3.eth.sendTransaction({from: $scope.sellers_address, to: $scope.contract_address, value: web3.toWei(1, "ether")});
-			//console.log(result);
 
 		}
 
