@@ -1,9 +1,9 @@
-contract Winstrument {
+contract ChainBackedOption {
 
     // Nuking enums to get stack depth under control
     enum UnderlierType {gasLimit, difficulty, accountBalance, scalar}
     enum Operator {LT, GT, EQ, NEQ, LEQ, GEQ}
-    
+
     struct Underlier {
         bytes32         utype;
         address         addressValue;
@@ -11,49 +11,48 @@ contract Winstrument {
     }
 
     struct Conditional {
-        Underlier       lhs;        // temporarily changed from an array of Underliers
-        Underlier       rhs;        // temporarily changed from an array of Underliers
+        Underlier       lhs;    // temporarily changed from Underlier[]
+        Underlier       rhs;    // temporarily changed from Underlier[]
         bytes32         operator;
-    //  uint            maturity;   // block number to use as maturity (temporarily disabled)
     }
-    
+
     struct Conjunction {
         Conditional[]   conditionals;
     }
-    
+
     struct OneToOneTransaction {
         address     sender;     // the person putting up the stake
         address     receiver;   // the person who stands to gain the stake
         uint        value;      // the stake
     }
-   
+
     // State variables
     bool                _isActive;
     bool                _isComplete;
     Conjunction[]       _condition;
     OneToOneTransaction _transaction;
     uint                _maturity;
-   
-    function Instrument(){}
-    
+
+    function ChainBackedOption(){}
+
     // The sender constructs the contract
     function initialize(
-        address sender, 
-        address receiver, 
-        bytes32 lhsUnderlierType, 
+        address sender,
+        address receiver,
+        bytes32 lhsUnderlierType,
         address lhsUnderlierAddress,
-        int    lhsUnderlierValue,
-        bytes32 rhsUnderlierType, 
+        int     lhsUnderlierValue,
+        bytes32 rhsUnderlierType,
         address rhsUnderlierAddress,
-        int    rhsUnderlierValue,
-        bytes32 operator, 
+        int     rhsUnderlierValue,
+        bytes32 operator,
         uint    maturity) returns (bool val) {
-            
+
         _isActive = false;
         _isComplete = false;
         _maturity = maturity;
         _transaction = OneToOneTransaction(sender, receiver, msg.value);
-        
+
         addCondition('OR',
                      lhsUnderlierType, lhsUnderlierAddress, lhsUnderlierValue,
                      rhsUnderlierType, rhsUnderlierAddress, rhsUnderlierValue,
@@ -63,30 +62,25 @@ contract Winstrument {
 
     function addCondition(
         bytes32 logicalOperator,
-        bytes32 lhsUnderlierType, 
+        bytes32 lhsUnderlierType,
         address lhsUnderlierAddress,
         int     lhsUnderlierValue,
-        bytes32 rhsUnderlierType, 
+        bytes32 rhsUnderlierType,
         address rhsUnderlierAddress,
         int     rhsUnderlierValue,
         bytes32 inequalityOperator
         ) returns (bool) {
-        
-        Underlier lhs;
-        lhs.utype = lhsUnderlierType;
-        lhs.addressValue = lhsUnderlierAddress;
-        lhs.coeffValue = lhsUnderlierValue;
-        
-        Underlier rhs;
-        rhs.utype = rhsUnderlierType;
-        rhs.addressValue = rhsUnderlierAddress;
-        rhs.coeffValue = rhsUnderlierValue;
-        
-        Conditional conditional;
-        conditional.lhs = lhs;
-        conditional.rhs = rhs;
-        conditional.operator = inequalityOperator;
-        
+
+        Underlier memory lhs = Underlier(lhsUnderlierType,
+                                         lhsUnderlierAddress,
+                                         lhsUnderlierValue);
+        Underlier memory rhs = Underlier(rhsUnderlierType,
+                                         rhsUnderlierAddress,
+                                         rhsUnderlierValue);
+        Conditional memory conditional = Conditional(lhs,
+                                                     rhs,
+                                                     inequalityOperator);
+
         uint i = _condition.length;
         if (logicalOperator == 'AND') {
             // Add to last conjunction
@@ -104,65 +98,55 @@ contract Winstrument {
         }
         return true;
     }
-    
-    function makeUnderlier(
-        bytes32 lhsUnderlierType, 
-        address lhsUnderlierAddress,
-        int     lhsUnderlierValue
-        ) private returns (Underlier) {
-            
-        Underlier lhs;
-        lhs.utype = lhsUnderlierType;
-        lhs.addressValue = lhsUnderlierAddress;
-        lhs.coeffValue = lhsUnderlierValue;
-        
-        return lhs;
-        }
-    
+
     // The receiver validates the contract with the same parameters
     function validate() returns (bool val) {
-        
-        // Disabling validation until compound conditions are implemented.
-        // Life is too cumbersome otherwise.
-        
-        _isActive == true;
+        if(_isActive || _isComplete) {
+            return false;
+        }
+        // Just a stub for now
+        _isActive = true;
         return true;
     }
-    
+
     // If not validated, allow sender to withdraw
     function withdraw() returns (bool val) {
-        if(_isActive) {
+        if(_isActive || _isComplete) {
             return false;
         }
-        suicide(_transaction.sender);
         _transaction.sender.send(this.balance);
+        // suicide(_transaction.sender);
+        _isActive = false;
+        _isComplete = true;
         return true;
     }
-    
+
     // If condition is met on maturity, allow receiver to claim from escrow
     function trigger() returns (bool val) {
-        if (!isConditionMet()) {
+        if (!_isActive || _isComplete || !isConditionMet()) {
             return false;
         }
+        _transaction.receiver.send(this.balance);
+        // suicide(_transaction.receiver);
         _isActive = false;
         _isComplete = true;
-        _transaction.receiver.send(this.balance);
         return true;
     }
-    
+
     // If condition is not met on maturity, allow sender to reclaim from escrow
     function recall() returns (bool val) {
-        if (isConditionMet()) {
+        if (!_isActive || _isComplete || isConditionMet()) {
             return false;
         }
+        _transaction.sender.send(this.balance);
+        // suicide(_transaction.sender);
         _isActive = false;
         _isComplete = true;
-        _transaction.sender.send(this.balance);
         return true;
     }
-    
+
     // ===== Utility functions ===== //
-    
+
     function strToOperator(bytes32 str) private returns (Operator) {
         if(str=='NEQ') {
             return Operator.NEQ;
@@ -178,7 +162,7 @@ contract Winstrument {
             return Operator.EQ;
         }
     }
-    
+
     function strToUnderlierType(bytes32 str) private returns (UnderlierType) {
         if (str=='GASLIMIT') {
             return UnderlierType.gasLimit;
@@ -190,20 +174,20 @@ contract Winstrument {
             return UnderlierType.scalar;
         }
     }
-    
+
     // Resolve a single underlier to a value
     function resolveUnderlier(Underlier underlier) private returns (int) {
         int resolvedValue = 0;
-        if (underlier.utype == 'GASLIMIT') {                    // UnderlierType.gasLimit) {
+        if (underlier.utype == 'GASLIMIT') {            // UnderlierType.gasLimit) {
             resolvedValue = int(block.gaslimit);
-        } else if(underlier.utype == 'DIFFICULTY') {            // UnderlierType.difficulty) {
+        } else if(underlier.utype == 'DIFFICULTY') {    // UnderlierType.difficulty) {
             resolvedValue = int(block.difficulty);
-        } else if(underlier.utype == 'ACCBALANCE') {            // UnderlierType.accountBalance) {
+        } else if(underlier.utype == 'ACCBALANCE') {    // UnderlierType.accountBalance) {
             resolvedValue = int(underlier.addressValue.balance);
         } else {
             resolvedValue = 1;
         }
-        
+
         if (underlier.coeffValue != 0) {
             return underlier.coeffValue * resolvedValue;
         } else {
@@ -211,7 +195,7 @@ contract Winstrument {
             return resolvedValue;
         }
     }
-    
+
     function sumUnderliers(Underlier[] underliers) private returns (int) {
         int sum = 0;
         for (uint8 i = 0; i < underliers.length; ++i) {
@@ -219,18 +203,15 @@ contract Winstrument {
         }
         return sum;
     }
-    
+
     // Sum up the resolved LHS and RHS of the conditional and check it
     function checkConditional(Conditional conditional) private returns (bool) {
-        // per-conditional maturity is temporarily disabled
-    //  if(block.number < conditional.maturity) {
-    //      log1("Conditional has not matured");
-    //      return false;
-    //  }
-        
-        // Disabling linear functions for now
-        int lhsSum = resolveUnderlier(conditional.lhs);      // sumUnderliers(conditional.lhs);
-        int rhsSum = resolveUnderlier(conditional.rhs);      // sumUnderliers(conditional.rhs);
+        // Temporarily disabling linear functions
+        // int lhsSum = sumUnderliers(conditional.lhs);
+        // int rhsSum = sumUnderliers(conditional.rhs);
+
+        int lhsSum = resolveUnderlier(conditional.lhs);
+        int rhsSum = resolveUnderlier(conditional.rhs);
         log1("LHS", bytes32(lhsSum));
         log1("RHS", bytes32(rhsSum));
         if ((conditional.operator == 'EQ' && lhsSum == rhsSum) ||
@@ -243,7 +224,7 @@ contract Winstrument {
             }
         return false;
     }
-    
+
     function checkConjunction(Conditional[] conditionals) private returns (bool) {
         for (uint8 i = 0; i < conditionals.length; ++i) {
             if (checkConditional(conditionals[i]) == false) {
@@ -252,12 +233,12 @@ contract Winstrument {
         }
         return true;
     }
-    
+
     function isConditionMet() private returns (bool) {
         if(block.number < _maturity) {
             return false;
         }
-        
+
         // A condition is a disjunction of conjunctions
         for (uint8 i = 0; i < _condition.length; ++i) {
             Conditional[] conditionals = _condition[i].conditionals;
