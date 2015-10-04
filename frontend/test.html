@@ -1,18 +1,23 @@
-<!DOCTYPE html>
-<html ng-app="dapp">
 
-<head>
-    <meta charset="utf-8">
-    <title>BlockInstruments</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.2/angular.min.js"></script>
-    <script type="text/javascript" src="bower_components/bignumber.js/bignumber.min.js"></script>
+    <script type="text/javascript" src="bower_components/bignumber.js/bignumber.min.js"></script><!DOCTYPE html>
+    <html ng-app="dapp">
+
+    <head>
+        <meta charset="utf-8">
+        <title>BlockInstruments</title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
     <script type="text/javascript" src="bower_components/web3/dist/web3.js"></script>
     <script>
         angular.module("dapp", []);
     </script>
     <script src="app.js"></script>
+
+        <style>
+            div.buyer{background-color: lightyellow}
+            div.seller{background-color: lightcyan}
+        </style>
 </head>
 
 <body ng-controller="mainController">
@@ -39,13 +44,17 @@
     <p>Contract Address</p>
     <input type="text" ng-model="contract_address" />
 
-    <h2>Push new contract to blockchain</h2>
+    <div class="seller">
+
+    <h2>Seller Actions</h2>
+
+    <h3>Push new contract to blockchain</h3>
 
     <p>Transaction hash: {{tx_hash}}</p>
     <p>Address: {{contract_address}}</p>
     <input type="submit" value="Push" ng-click="createContract(sellers_address)" />
 
-    <h2>Initialize contract</h2>
+    <h3>Initialize contract</h3>
 
     <p>HS Underlier Type</p>
     <input type="text" ng-model="contractInput.lhsUnderlierType" value="111" />
@@ -63,35 +72,69 @@
     <input type="text" ng-model="contractInput.operator" />
     <p>Maturity</p>
     <input type="text" ng-model="contractInput.maturity" />
+    <p>Notional</p>
+    <input type="text" ng-model="contractInput.notional" />
     <p></p>
     <input type="submit" value="Initialize" ng-click="initializeContract(contractInput)" />
 
 
-    <h2>Validate</h2>
-
-    <p>{{ validated }}</p>
-    <input type="submit" value="Validate" ng-click="validate()" />
-
-
-    <h2>Withdraw</h2>
+    <h3>Withdraw</h3>
 
     <p>{{ withdrawn }}</p>
     <input type="submit" value="Validate" ng-click="withdraw()" />
 
 
-    <h2>Trigger</h2>
-
-    <p>{{ triggered }}</p>
-    <input type="submit" value="Trigger" ng-click="trigger()" />
-
-
-    <h2>Recall</h2>
+    <h3>Recall</h3>
 
     <p>{{ recalled }}</p>
     <input type="submit" value="Recall" ng-click="recall()" />
 
+    </div>
 
-    <h2>Get balance</h2>
+    <div class="buyer">
+
+    <h2>Buyer Actions</h2>
+
+
+    <h3>Validate</h3>
+
+    <p>{{ validated }}</p>
+
+        <p>HS Underlier Type</p>
+        <input type="text" ng-model="bcontractInput.lhsUnderlierType" value="111" />
+        <p>LHS Underlier Address</p>
+        <input type="text" ng-model="bcontractInput.lhsUnderlierAddress" />
+        <p>LHS Underlier Value</p>
+        <input type="text" ng-model="bcontractInput.lhsUnderlierValue" />
+        <p>RHS Underlier Type</p>
+        <input type="text" ng-model="bcontractInput.rhsUnderlierType" />
+        <p>RHS Address</p>
+        <input type="text" ng-model="bcontractInput.rhsUnderlierAddress" />
+        <p>RHS Value</p>
+        <input type="text" ng-model="bcontractInput.rhsUnderlierValue" />
+        <p>Operator</p>
+        <input type="text" ng-model="bcontractInput.operator" />
+        <p>Maturity</p>
+        <input type="text" ng-model="bcontractInput.maturity" />
+        <p>Notional</p>
+        <input type="text" ng-model="bcontractInput.notional" />
+        <p></p>
+        <input type="submit" value="Initialize" ng-click="initializeContract(bcontractInput)" />
+
+    <input type="submit" value="Validate" ng-click="validate()" />
+
+
+    <h3>Trigger</h3>
+
+    <p>{{ triggered }}</p>
+    <input type="submit" value="Trigger" ng-click="trigger()" />
+
+    </div>
+
+
+    <h2>Other</h2>
+
+    <h3>Get balance</h3>
 
     <p>{{ balance }} ETH</p>
     <input type="submit" value="Get Balance" ng-click="getBalance(contract_address)" />
