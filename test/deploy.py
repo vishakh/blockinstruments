@@ -7,6 +7,12 @@ import subprocess
 import tempfile
 
 
+def replace_name(contract_name, line):
+    """Replace name in contract line.
+    """
+    i = line.find(contract_name)
+    return line[:i] + "Example" + line[i+len(contract_name):]
+
 def read_contract(contract_path):
     """Read a Solidity file and expand imported contracts recursively.
     """
@@ -22,8 +28,9 @@ def read_contract(contract_path):
                 lib_path = os.path.join(contract_dir, lib_name)
                 output_lines.extend(read_contract(lib_path))
                 output_lines.append('\n')
-            elif line.startswith('contract ' + contract_name):
-                output_lines.append('contract Example\n')
+            elif line.startswith('contract ' + contract_name) or \
+                    line.startswith('function ' + contract_name):
+                output_lines.append(replace_name(contract_name, line))
             else:
                 output_lines.append(line)
     return output_lines
