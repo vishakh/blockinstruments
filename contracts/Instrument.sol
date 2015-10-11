@@ -7,7 +7,6 @@ contract Instrument {
     //parameters
     SimplePremise       _premise;
     OneToOneTransaction _transaction;
-    SimplePremise[][]   _compoundPremise;
     
     //Hack variables to get around struct instantiation issues.
     Underlier           _underlier1;
@@ -35,6 +34,9 @@ contract Instrument {
         address     receiver;   // the person taking the bet
         uint        value;      // the stake
     }
+
+    mapping (uint => uint) public bagItemCount;
+      mapping (uint => mapping (uint => uint)) public items;
     
     function Instrument(){}
     
@@ -55,6 +57,11 @@ contract Instrument {
         bytes32 operator, 
         uint maturity) returns (bool val)
     {
+        if(sender != msg.sender || _isComplete || _isActive)
+        {
+            return false;
+        }
+
         _isActive = false;
         _isComplete = false;
         
@@ -69,47 +76,87 @@ contract Instrument {
         _premise = SimplePremise(_underlier1, _underlier2, strToOperator(operator), maturity);
         _transaction = OneToOneTransaction(sender, receiver, msg.value);
         
-        /*if(sender != msg.sender)
-        {
-            suicide(sender);
-        }*/
-        
         return true;
     }
     
     // The receiver validates the contract with the same parameters
-    function validate() returns (bool val) {
-        /*if (msg.sender!=sender)
+    function validate(
+            address sender,
+            address receiver,
+            bytes32 lhsUnderlierType,
+            address lhsUnderlierAddress,
+            uint    lhsUnderlierValue,
+            bytes32 rhsUnderlierType,
+            address rhsUnderlierAddress,
+            uint    rhsUnderlierValue,
+            bytes32 operator,
+            uint maturity,
+            uint notional
+            ) returns (bool val) {
+        /*if (msg.sender != _transaction.receiver || _isComplete)
+        {
+            return false;
+        }
+
+        if(_transaction.sender != sender ||
+            _transaction.receiver != receiver)
+            return false;
+        
+        if (_premise.lhs.utype != strToUnderlierType(lhsUnderlierType) ||
+            _premise.lhs.addressValue != lhsUnderlierAddress ||
+            _premise.lhs.scalarValue != lhsUnderlierValue){
+            return false;
+        }
+        
+        if (_premise.rhs.utype != strToUnderlierType(rhsUnderlierType) ||
+            _premise.rhs.addressValue != rhsUnderlierAddress ||
+            _premise.rhs.scalarValue != rhsUnderlierValue){
+            return false;
+        }
+        
+        if(_premise.operator != strToOperator(operator))
         {
             return false;
         }
         
-        if (//_premise.underlier != underlier ||
-            _premise.operator != strToOperator( operator ) ||
-            _premise.strike != strike){
+        if(_premise.maturity != maturity)
+        {
+            return false;
+        }
+
+        if(this.balance != notional)
+        {
             return false;
         }*/
-        
-        // Disabling validation until compound conditions are implemented.
-        // Life is too cumbersome otherwise.
-        
+
+        _isActive = true;
+
         return true;
     }
     
     // If not validated, allow sender to withdra
     function withdraw() returns (bool val) {
+        if (msg.sender!=_transaction.sender || _isComplete)
+        {
+            return false;
+        }
+
         if(_isActive)
         {
             return false;
         }
-        suicide(_transaction.sender);
         _transaction.sender.send(this.balance);
         return true;
     }
     
-    //if condition is met on mzturity, allow receiver to claim from escrow
+    //if condition is met on maturity, allow receiver to claim from escrow
     function trigger() returns (bool val) {
-        
+
+        if (msg.sender!=_transaction.receiver || _isComplete)
+        {
+            return false;
+        }
+
         if( !isConditionMet() )
         {
             return false;
@@ -122,6 +169,11 @@ contract Instrument {
     
     //if condition is not met on maturity, allow sender to reclaim from escrow
     function recall() returns (bool val) {
+
+        if (msg.sender!=_transaction.sender || _isComplete)
+        {
+            return false;
+        }
         
         if( isConditionMet() )
         {
@@ -227,7 +279,7 @@ contract Instrument {
         log1("rhs: ", bytes32(spot_rhs) );
         
         if(( _premise.operator == Operator.EQ && spot_lhs == spot_rhs ) ||
-            ( _premise.operator == Operator.NEQ && spot_lhs == spot_rhs ) ||
+            ( _premise.operator == Operator.NEQ && spot_lhs != spot_rhs ) ||
             ( _premise.operator == Operator.LEQ && spot_lhs <= spot_rhs ) ||
             ( _premise.operator == Operator.GEQ && spot_lhs >= spot_rhs ) ||
             ( _premise.operator == Operator.LT && spot_lhs < spot_rhs ) ||
@@ -239,4 +291,20 @@ contract Instrument {
         
         return false;
     }
+
+
+    function addItem(uint bagId,
+                        uint itemId,
+                        uint itemValue) {
+
+        var itemIdx = bagItemCount[bagId];
+        items[bagId][itemIdx++] = itemValue;
+        bagItemCount[bagId] = bagItemCount[bagId] + 1;
+      }
+
+      function getItem(uint bagId, uint itemId) returns (bool itemVal) {
+        //return items[bagId][itemId];
+        return true;
+      }
+
 }

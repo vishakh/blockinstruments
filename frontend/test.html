@@ -30,6 +30,7 @@
         Accounts: {{accounts}} <br/>
         Balances: {{balances}} <br />
         Block number: {{blocknumber}} <br />
+        Difficulty: {{difficulty}} <br/>
         Gas price: {{gasprice}} <br/>
     </p>
 
@@ -100,28 +101,26 @@
 
     <p>{{ validated }}</p>
 
-        <p>HS Underlier Type</p>
-        <input type="text" ng-model="bcontractInput.lhsUnderlierType" value="111" />
-        <p>LHS Underlier Address</p>
-        <input type="text" ng-model="bcontractInput.lhsUnderlierAddress" />
-        <p>LHS Underlier Value</p>
-        <input type="text" ng-model="bcontractInput.lhsUnderlierValue" />
-        <p>RHS Underlier Type</p>
-        <input type="text" ng-model="bcontractInput.rhsUnderlierType" />
-        <p>RHS Address</p>
-        <input type="text" ng-model="bcontractInput.rhsUnderlierAddress" />
-        <p>RHS Value</p>
-        <input type="text" ng-model="bcontractInput.rhsUnderlierValue" />
-        <p>Operator</p>
-        <input type="text" ng-model="bcontractInput.operator" />
-        <p>Maturity</p>
-        <input type="text" ng-model="bcontractInput.maturity" />
-        <p>Notional</p>
-        <input type="text" ng-model="bcontractInput.notional" />
-        <p></p>
-        <input type="submit" value="Initialize" ng-click="initializeContract(bcontractInput)" />
-
-    <input type="submit" value="Validate" ng-click="validate()" />
+    <p>HS Underlier Type</p>
+    <input type="text" ng-model="bcontractInput.lhsUnderlierType" />
+    <p>LHS Underlier Address</p>
+    <input type="text" ng-model="bcontractInput.lhsUnderlierAddress" />
+    <p>LHS Underlier Value</p>
+    <input type="text" ng-model="bcontractInput.lhsUnderlierValue" />
+    <p>RHS Underlier Type</p>
+    <input type="text" ng-model="bcontractInput.rhsUnderlierType" />
+    <p>RHS Address</p>
+    <input type="text" ng-model="bcontractInput.rhsUnderlierAddress" />
+    <p>RHS Value</p>
+    <input type="text" ng-model="bcontractInput.rhsUnderlierValue" />
+    <p>Operator</p>
+    <input type="text" ng-model="bcontractInput.operator" />
+    <p>Maturity</p>
+    <input type="text" ng-model="bcontractInput.maturity" />
+    <p>Notional</p>
+    <input type="text" ng-model="bcontractInput.notional" />
+    <p></p>
+    <input type="submit" value="Validate" ng-click="validate(bcontractInput)" />
 
 
     <h3>Trigger</h3>
