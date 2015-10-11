@@ -34,9 +34,6 @@ contract Instrument {
         address     receiver;   // the person taking the bet
         uint        value;      // the stake
     }
-
-    mapping (uint => uint) public bagItemCount;
-      mapping (uint => mapping (uint => uint)) public items;
     
     function Instrument(){}
     
@@ -57,10 +54,13 @@ contract Instrument {
         bytes32 operator, 
         uint maturity) returns (bool val)
     {
-        if(sender != msg.sender || _isComplete || _isActive)
-        {
+        //if(sender != msg.sender)
+        //{
+        //    return false;
+        //}
+        
+        if(_isComplete || _isActive)
             return false;
-        }
 
         _isActive = false;
         _isComplete = false;
@@ -93,41 +93,51 @@ contract Instrument {
             uint maturity,
             uint notional
             ) returns (bool val) {
-        /*if (msg.sender != _transaction.receiver || _isComplete)
+        /*if (msg.sender != _transaction.receiver)
         {
+            log1("1", "foo1");
             return false;
-        }
+        }*/
+        
+        if(_isComplete)
+            return false;
 
         if(_transaction.sender != sender ||
             _transaction.receiver != receiver)
             return false;
+        log1("2", "foo2");
         
         if (_premise.lhs.utype != strToUnderlierType(lhsUnderlierType) ||
             _premise.lhs.addressValue != lhsUnderlierAddress ||
             _premise.lhs.scalarValue != lhsUnderlierValue){
             return false;
         }
+        log1("3", "foo3");
         
         if (_premise.rhs.utype != strToUnderlierType(rhsUnderlierType) ||
             _premise.rhs.addressValue != rhsUnderlierAddress ||
             _premise.rhs.scalarValue != rhsUnderlierValue){
             return false;
         }
+        log1("4", "foo4");
         
         if(_premise.operator != strToOperator(operator))
         {
             return false;
         }
+        log1("5", "foo5");
         
         if(_premise.maturity != maturity)
         {
             return false;
         }
+        log1("6", "foo6");
 
         if(this.balance != notional)
         {
             return false;
-        }*/
+        }
+        log1("7", "foo7");
 
         _isActive = true;
 
@@ -136,15 +146,19 @@ contract Instrument {
     
     // If not validated, allow sender to withdra
     function withdraw() returns (bool val) {
-        if (msg.sender!=_transaction.sender || _isComplete)
+        /*if (msg.sender!=_transaction.sender)
         {
             return false;
-        }
+        }*/
+        
+        if(_isComplete)
+            return false;
 
         if(_isActive)
         {
             return false;
         }
+        
         _transaction.sender.send(this.balance);
         return true;
     }
@@ -152,10 +166,13 @@ contract Instrument {
     //if condition is met on maturity, allow receiver to claim from escrow
     function trigger() returns (bool val) {
 
-        if (msg.sender!=_transaction.receiver || _isComplete)
+        /*if (msg.sender!=_transaction.receiver)
         {
             return false;
-        }
+        }*/
+        
+        if(_isComplete)
+            return false;
 
         if( !isConditionMet() )
         {
@@ -170,10 +187,13 @@ contract Instrument {
     //if condition is not met on maturity, allow sender to reclaim from escrow
     function recall() returns (bool val) {
 
-        if (msg.sender!=_transaction.sender || _isComplete)
+        /*if (msg.sender!=_transaction.sender)
         {
             return false;
-        }
+        }*/
+        
+        if(_isComplete)
+            return false;
         
         if( isConditionMet() )
         {
@@ -291,20 +311,5 @@ contract Instrument {
         
         return false;
     }
-
-
-    function addItem(uint bagId,
-                        uint itemId,
-                        uint itemValue) {
-
-        var itemIdx = bagItemCount[bagId];
-        items[bagId][itemIdx++] = itemValue;
-        bagItemCount[bagId] = bagItemCount[bagId] + 1;
-      }
-
-      function getItem(uint bagId, uint itemId) returns (bool itemVal) {
-        //return items[bagId][itemId];
-        return true;
-      }
 
 }
