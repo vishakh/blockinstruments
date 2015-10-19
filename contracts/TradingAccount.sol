@@ -43,6 +43,9 @@ contract TradingAccount {
     }
 
     function authorize(address accountAddr, uint numDays) returns (bool) {
+        if (numDays == 0) {
+            return false;
+        }
         AuthPeriod period = _authorized[accountAddr];
         if (period.numDays == 0 || timeRemaining(period) < numDays) {
             // Add this account to the list of authorized accounts
