@@ -92,7 +92,7 @@ contract FeedBackedCall is nameRegAware {
         // Disabling validation until compound conditions are implemented.
         // Life is too cumbersome otherwise.
 
-        _isActive == true;
+        _isActive = true;
         return true;
     }
 
