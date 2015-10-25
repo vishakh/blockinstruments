@@ -1,0 +1,42 @@
+<html>
+
+<head>
+    <title>Ping a contract</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.2/angular.min.js"></script>
+    <script type="text/javascript" src="bower_components/bignumber.js/bignumber.min.js"></script>
+    <script type="text/javascript" src="bower_components/web3/dist/web3.js"></script>
+    <script src="pinger.js"></script>
+    <script>
+        function start() {
+            var numPings    = document.getElementById('num_pings').value;
+            var pi          = document.getElementById('ping_interval').value;
+            worker.postMessage({'cmd': 'start', 'num_pings': numPings, 'ping_interval': pi});
+        }
+
+        /*var web3 = new Web3();
+        web3.setProvider(new web3.providers.HttpProvider('http://localhost:56000'));*/
+        var worker = new Worker('pinger.js');
+        worker.addEventListener('message', function(e) {
+            var result = document.getElementById('result').textContent;
+            document.getElementById('result').textContent = result + e.data + " ";
+        }, false);
+    </script>
+</head>
+
+<body>
+    <h1>Contract Poker</h1>
+    <p>Contract address:</p>
+    <input type="text" id="contract_address" size="40" value="0x4f23b9370f2fa06a651913f3c7f278fa8ba33dee" />
+    <p>ABI</p>
+    <textarea id="abi" rows="5" cols="80">[{"constant":false,"inputs":[{"name":"sender","type":"address"},{"name":"receiver","type":"address"},{"name":"lhsUnderlierType","type":"bytes32"},{"name":"lhsUnderlierAddress","type":"address"},{"name":"lhsUnderlierValue","type":"uint256"},{"name":"rhsUnderlierType","type":"bytes32"},{"name":"rhsUnderlierAddress","type":"address"},{"name":"rhsUnderlierValue","type":"uint256"},{"name":"operator","type":"bytes32"},{"name":"maturity","type":"uint256"},{"name":"notional","type":"uint256"}],"name":"validate","outputs":[{"name":"val","type":"bool"}],"type":"function"},{"constant":false,"inputs":[],"name":"withdraw","outputs":[{"name":"val","type":"bool"}],"type":"function"},{"constant":false,"inputs":[],"name":"trigger","outputs":[{"name":"val","type":"bool"}],"type":"function"},{"constant":false,"inputs":[{"name":"sender","type":"address"},{"name":"receiver","type":"address"},{"name":"lhsUnderlierType","type":"bytes32"},{"name":"lhsUnderlierAddress","type":"address"},{"name":"lhsUnderlierValue","type":"uint256"},{"name":"rhsUnderlierType","type":"bytes32"},{"name":"rhsUnderlierAddress","type":"address"},{"name":"rhsUnderlierValue","type":"uint256"},{"name":"operator","type":"bytes32"},{"name":"maturity","type":"uint256"}],"name":"Initialize","outputs":[{"name":"val","type":"bool"}],"type":"function"},{"constant":false,"inputs":[],"name":"recall","outputs":[{"name":"val","type":"bool"}],"type":"function"},{"inputs":[],"type":"constructor"}]</textarea>
+    <p>Number of pings</p>
+    <input type="text" id="num_pings" size="4" value="10" />
+    <p>Ping interval (ms)</p>
+    <input type="text" id="ping_interval" size="4" value="1000" />
+    <p></p>
+    <button value="Start" onclick="start()">Start</button>
+    <div style="background-color: azure " id="result"/>
+</body>
+
+
+</html>
