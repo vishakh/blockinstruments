@@ -37,13 +37,13 @@
     <h2>Parameters</h2>
 
     <p>Seller's Address</p>
-    <input type="text" ng-model="sellers_address" />
+    <input type="text" size="40" ng-model="sellers_address" />
 
     <p>Buyer's Address</p>
-    <input type="text" ng-model="buyers_address" />
+    <input type="text" size="40" ng-model="buyers_address" />
 
     <p>Contract Address</p>
-    <input type="text" ng-model="contract_address" />
+    <input type="text" size="40" ng-model="contract_address" />
 
     <div class="seller">
 
@@ -60,13 +60,13 @@
     <p>HS Underlier Type</p>
     <input type="text" ng-model="contractInput.lhsUnderlierType" value="111" />
     <p>LHS Underlier Address</p>
-    <input type="text" ng-model="contractInput.lhsUnderlierAddress" />
+    <input type="text" size="40" ng-model="contractInput.lhsUnderlierAddress" />
     <p>LHS Underlier Value</p>
     <input type="text" ng-model="contractInput.lhsUnderlierValue" />
     <p>RHS Underlier Type</p>
     <input type="text" ng-model="contractInput.rhsUnderlierType" />
     <p>RHS Address</p>
-    <input type="text" ng-model="contractInput.rhsUnderlierAddress" />
+    <input type="text" size="40" ng-model="contractInput.rhsUnderlierAddress" />
     <p>RHS Value</p>
     <input type="text" ng-model="contractInput.rhsUnderlierValue" />
     <p>Operator</p>
@@ -104,13 +104,13 @@
     <p>HS Underlier Type</p>
     <input type="text" ng-model="bcontractInput.lhsUnderlierType" />
     <p>LHS Underlier Address</p>
-    <input type="text" ng-model="bcontractInput.lhsUnderlierAddress" />
+    <input type="text" size="40" ng-model="bcontractInput.lhsUnderlierAddress" />
     <p>LHS Underlier Value</p>
     <input type="text" ng-model="bcontractInput.lhsUnderlierValue" />
     <p>RHS Underlier Type</p>
     <input type="text" ng-model="bcontractInput.rhsUnderlierType" />
     <p>RHS Address</p>
-    <input type="text" ng-model="bcontractInput.rhsUnderlierAddress" />
+    <input type="text" size="40" ng-model="bcontractInput.rhsUnderlierAddress" />
     <p>RHS Value</p>
     <input type="text" ng-model="bcontractInput.rhsUnderlierValue" />
     <p>Operator</p>
@@ -138,6 +138,12 @@
     <p>{{ balance }} ETH</p>
     <input type="submit" value="Get Balance" ng-click="getBalance(contract_address)" />
 
+    <h3>Poke</h3>
+
+    <p>{{ balance }}</p>
+    Poke every <input type="text" size="4" ng-model="poke_interval" /> seconds.<br/>
+    <input type="submit" value="Start" ng-click="poke(contract_address)" />
+    <input type="submit" value="Stop" ng-click="do_poke=false" />
 </body>
 
 </html>

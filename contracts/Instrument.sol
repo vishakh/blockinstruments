@@ -183,6 +183,10 @@ contract Instrument {
         _transaction.receiver.send(this.balance);
         return true;
     }
+
+    function poke() returns (bool val) {
+        return true;
+    }
     
     //if condition is not met on maturity, allow sender to reclaim from escrow
     function recall() returns (bool val) {
@@ -202,6 +206,10 @@ contract Instrument {
         _isActive = false;
         _isComplete = true;
         _transaction.sender.send(this.balance);
+        return true;
+    }
+
+    function ping() returns (bool val) {
         return true;
     }
     
