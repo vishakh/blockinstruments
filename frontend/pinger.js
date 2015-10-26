@@ -1,6 +1,3 @@
-var web3 = require('web3');
-web3.setProvider(new web3.providers.HttpProvider('http://localhost:56000'));
-
 function sleep(millis)
 {
     var date = new Date();
