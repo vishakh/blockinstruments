@@ -43,6 +43,9 @@ contract TradingAccount {
     }
 
     function authorize(address accountAddr, uint numDays) returns (bool) {
+        if (tx.origin != _owner) {
+            return false;
+        }
         if (numDays == 0) {
             return false;
         }
@@ -50,6 +53,7 @@ contract TradingAccount {
         if (period.numDays == 0 || timeRemaining(period) < numDays) {
             // Add this account to the list of authorized accounts
             _authorized[accountAddr] = AuthPeriod(numDays, block.timestamp);
+            // TODO: retain AuthPeriod history in linked list for revocation
             return true;
         }
         return false;
