@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <script type="text/javascript" src="bower_components/bignumber.js/bignumber.min.js"></script>
+    <script type="text/javascript" src="bower_components/web3/dist/web3.js"></script>
+    <script>
+
+        function logToScreen(message)
+        {
+            document.getElementById('result').textContent = message;
+        }
+
+        function refreshAccount()
+        {
+            var address = document.getElementById('address').value;
+            var balanceInWei = web3.eth.getBalance(address).toNumber();
+            var balanceInEth = web3.fromWei(balanceInWei, 'ether');
+            document.getElementById('balance').textContent = "Balance: " +  balanceInEth + " ETH";
+        }
+
+        function createAccount()
+        {
+            logToScreen("Creating a new trading account..");
+            tradingAccount = tradingAccountContract.new(
+                    {
+                        from: web3.eth.accounts[0],
+                        data: '60606040525b33600060006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908302179055505b61049d8061003f6000396000f360606040526000357c0100000000000000000000000000000000000000000000000000000000900480632e1a7d4d1461004f578063c1dbd9b21461007b578063d0e30db0146100b05761004d565b005b6100656004808035906020019091905050610188565b6040518082815260200191505060405180910390f35b61009a6004808035906020019091908035906020019091905050610276565b6040518082815260200191505060405180910390f35b6100bd60048050506100d3565b6040518082815260200191505060405180910390f35b60003373ffffffffffffffffffffffffffffffffffffffff16600060009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1614806101365750610135336103e6565b5b15610148576001905061018556610184565b3373ffffffffffffffffffffffffffffffffffffffff16600034604051809050600060405180830381858888f193505050505060009050610185565b5b90565b60003073ffffffffffffffffffffffffffffffffffffffff16318211156101c6573073ffffffffffffffffffffffffffffffffffffffff1631915081505b600060009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff1614806102275750610226336103e6565b5b15610268573373ffffffffffffffffffffffffffffffffffffffff16600083604051809050600060405180830381858888f193505050505060019050610271565b60009050610271565b919050565b60006000600060009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163273ffffffffffffffffffffffffffffffffffffffff161415156102da57600091506103df565b60008314156102ec57600091506103df565b600160005060008573ffffffffffffffffffffffffffffffffffffffff1681526020019081526020016000206000509050600081600001600050541480610363575082610361826040604051908101604052908160008201600050548152602001600182016000505481526020015050610471565b105b156103d65760406040519081016040528084815260200142815260200150600160005060008673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020016000206000506000820151816000016000505560208201518160010160005055905050600191506103df565b600091506103df565b5092915050565b60006000600160005060008473ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060005090506000816000016000505411801561046457506000610461826040604051908101604052908160008201600050548152602001600182016000505481526020015050610471565b10155b915061046b565b50919050565b6000600060008360200151420391506201518082049050808460000151039250610496565b505091905056',
+                        gas: 3000000
+                    }, function(e, contract){
+                        if (typeof contract.address != 'undefined') {
+                            console.log(e, contract);
+                            console.log('Contract mined! address: ' + contract.address + ' transactionHash: ' + contract.transactionHash);
+                            document.getElementById('address').value = contract.address;
+                            logToScreen("New trading account created at " + contract.address);
+                            refreshAccount();
+                        }
+                    });
+        }
+
+        function fundContract()
+        {
+            logToScreen("Funding trading account with 1 ETH..");
+            var address = document.getElementById('address').value;
+            var amount = web3.toWei(1, 'ether');
+            web3.eth.sendTransaction({"from": web3.eth.coinbase, "to": address, "value": amount},
+                    function(err, result) {
+                        console.log(err, result);
+                        logToScreen("Funded trading account with 1 ETH. The new balance will be reflected soon.");
+                    });
+        }
+
+
+        function loadAccount()
+        {
+            logToScreen("Loading trading account..");
+            var address = document.getElementById('address').value;
+            tradingAccount = tradingAccountContract.at(address);
+            console.log(tradingAccount);
+            logToScreen("Loaded trading account.");
+            refreshAccount();
+        }
+
+        var web3 = require('web3');
+        web3.setProvider(new web3.providers.HttpProvider('http://localhost:56000'));
+        var tradingAccountContract = web3.eth.contract([{"constant":false,"inputs":[{"name":"amount","type":"uint256"}],"name":"withdraw","outputs":[{"name":"","type":"bool"}],"type":"function"},{"constant":false,"inputs":[{"name":"accountAddr","type":"address"},{"name":"numDays","type":"uint256"}],"name":"authorize","outputs":[{"name":"","type":"bool"}],"type":"function"},{"constant":false,"inputs":[],"name":"deposit","outputs":[{"name":"","type":"bool"}],"type":"function"},{"inputs":[],"type":"constructor"}]);
+        var tradingAccount;
+
+    </script>
+</head>
+<body>
+    <h1>Option Spread</h1>
+
+    <div style="background-color: azure " id="result"></div>
+
+    <h2>Trading Account</h2>
+
+    <input type="text" id="address" />
+    <button onclick="createAccount()">Create</button>
+    <button onclick="loadAccount()">Load</button>
+    <button onclick="fundContract()">Fund</button>
+    <button onclick="refreshAccount()">Refresh</button>
+    <p id="balance"></p>
+</body>
+</html>
