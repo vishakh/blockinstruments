@@ -1,8 +1,8 @@
 import "std.sol";
+import "TradingAccount.sol";
 
 
 contract PriceFeedApi {
-
     // block time when the prices were last updated
     uint public updateTime;
 
@@ -47,83 +47,123 @@ contract FeedBackedCall is nameRegAware {
         uint        startTime;      // time stamp to begin counting from
     }
 
-    struct OneToOneTransaction {
-        address     sender;         // person putting up the stake
-        address     receiver;       // person who stands to gain the stake
-        uint        value;          // stake
-    }
-
-    // State variables
+    // Contract status
     bool                _isActive;
     bool                _isComplete;
-    PriceFeedApi        _priceFeed;
-    OneToOneTransaction _transaction;
+
+    // Participating accounts and addresses
+    address             _broker;
+    address             _buyer;
+    TradingAccount      _buyerAcct;
+    address             _seller;
+    TradingAccount      _sellerAcct;
+
+    // Condition and underlier
+    PriceFeedApi        _underlier;
     StrikeCondition     _condition;
+    uint                _notional;
 
-    function FeedBackedCall(){}
+    function FeedBackedCall() {
+        _broker = msg.sender;
+    }
 
+    // Initialize with participants and condition
     function initialize(
-        address sender,
-        address receiver,
+        address seller,
+        address buyer,
         bytes32 feedName,
-        uint    multiplier,
-        uint    maturityInDays) returns (bool val) {
+        uint    notional,
+        uint    strikeToMarketRatio,
+        uint    maturityInDays) returns (bool) {
 
         _isActive = false;
         _isComplete = false;
 
-        _priceFeed = PriceFeedApi(named("ether-camp/price-feed"));
-        uint spotPrice = _priceFeed.getPrice(feedName);
+        // Trading accounts
+        _buyer = buyer;
+        _buyerAcct = TradingAccount(buyer);
+        _seller = seller;
+        _sellerAcct = TradingAccount(seller);
+
+        // If the broker is also the seller, authorize their trading account
+        // for twice the maturity period
+        authorizeTradingAccounts(maturityInDays);
+
+        _underlier = PriceFeedApi(named("ether-camp/price-feed"));
+        uint marketPrice = _underlier.getPrice(feedName);
+        uint strikePrice = (strikeToMarketRatio / 100) * marketPrice;
 
         _condition = StrikeCondition(feedName,
-                                     (multiplier / 100) * spotPrice,
+                                     strikePrice,
                                      maturityInDays,
                                      block.timestamp);
-        _transaction = OneToOneTransaction(sender,
-                                           receiver,
-                                           msg.value);
+        _notional = notional;
 
         return true;
     }
 
-    // The receiver validates the contract with the same parameters
-    function validate() returns (bool val) {
+    // Authorize trading accounts
+    function authorizeTradingAccounts(uint buffer) returns (bool) {
+        if (msg.sender == _buyer) {
+            _buyerAcct.authorize(this, _condition.maturityInDays + buffer);
+            return true;
+        }
+        if (msg.sender  == _seller) {
+            _sellerAcct.authorize(this, _condition.maturityInDays + buffer);
+            return true;
+        }
+        return false;
+    }
 
-        // Disabling validation until compound conditions are implemented.
-        // Life is too cumbersome otherwise.
-
+    // Any party can validate the contract
+    function validate() returns (bool) {
+        if (_isActive || _isComplete) {
+            return true;
+        }
+        // Need valid trading accounts
+        if (_seller == 0 || !_sellerAcct.isAuthorized(this)) {
+            return false;
+        }
+        // TODO: allow exercise of out of the money options
+        // if (_buyer == 0 || !_buyerAcct.isAuthorized(this)) {
+        //     return false;
+        // }
         _isActive = true;
         return true;
     }
 
-    // If not validated, allow sender to withdraw
-    function withdraw() returns (bool val) {
-        if(_isActive) {
+    // Withdraw and nullify the contract if not validated.
+    function withdraw() returns (bool) {
+        if (_isActive) {
             return false;
         }
-        // suicide(_transaction.sender);
-        _transaction.sender.send(this.balance);
+        if (msg.sender != _broker && msg.sender != _seller) {
+            return false;
+        }
+        // suicide(_broker);
+        _broker.send(this.balance);
         _isComplete = true;
         return true;
     }
 
-    // If condition is met on maturity, allow receiver to claim from escrow
-    function trigger() returns (bool val) {
+    // If condition is met on maturity, allow the buyer to exercise the option
+    function exercise() returns (bool) {
+        if (msg.sender != _buyer) {
+            return false;
+        }
+        // TODO: allow exercise of out of the money options
         if (!isConditionMet()) {
             return false;
         }
-        _transaction.receiver.send(this.balance);
-        _isActive = false;
-        _isComplete = true;
-        return true;
-    }
-
-    // If condition is not met on maturity, allow sender to reclaim from escrow
-    function recall() returns (bool val) {
-        if (isConditionMet()) {
+        // Transfer the difference
+        int spotPrice = int(_underlier.getPrice(_condition.feedName));
+        int difference = spotPrice - int(_condition.strikePrice);
+        if (difference < 0) {
             return false;
         }
-        _transaction.sender.send(this.balance);
+        _sellerAcct.withdraw(uint(difference) * _notional);
+        _buyerAcct.send(this.balance); // TODO: .deposit() if authorized
+
         _isActive = false;
         _isComplete = true;
         return true;
@@ -142,7 +182,7 @@ contract FeedBackedCall is nameRegAware {
     }
 
     function isAtOrInTheMoney() private returns (bool) {
-        if (_priceFeed.getPrice(_condition.feedName) >= _condition.strikePrice) {
+        if (_underlier.getPrice(_condition.feedName) >= _condition.strikePrice) {
             return true;
         } else {
             return false;
