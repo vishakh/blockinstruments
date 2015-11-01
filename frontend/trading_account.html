@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Option Spread</title>
+    <title>Trading Account</title>
     <script type="text/javascript" src="bower_components/bignumber.js/bignumber.min.js"></script>
     <script type="text/javascript" src="bower_components/web3/dist/web3.js"></script>
     <script>
@@ -20,15 +20,16 @@
             document.getElementById('balance').textContent = "Balance: " +  balanceInEth + " ETH";
             //var state = web3.eth.getStorageAt(address, 2);
             //console.log(state); // "0x03"
-            /*var result = tradingAccount._authorized.call(
+            /*var result = tradingAccount._addresses.call(
                     '0x66e5667e9ff37b7f5e29afc57fc9b645a66e9fd4',
-                    {from: web3.eth.defaultAccount, value: 0, gas: 2000000},
                     function(err, result){
                         console.log(result);
                     }
             );*/
+            var result = tradingAccount._addresses.call(
+                    '0x66e5667e9ff37b7f5e29afc57fc9b645a66e9fd4');
             //var result = new BigNumber(tradingAccount._owner.call());
-            //console.log(result);
+            console.log(result);
         }
 
         function createAccount()
@@ -112,6 +113,6 @@
     <h2>Actions</h2>
 
     <input type="text" id="authorizee" size="40" />
-    <button onclick="authorizeAddress()">Authorize</button>
+    <button onclick="authorizeAddress()">Authorize Address</button>
 </body>
 </html>
