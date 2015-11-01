@@ -59,7 +59,7 @@ contract TradingAccount {
         return false;
     }
 
-    function isAuthorized(address accountAddr) private returns (bool) {
+    function isAuthorized(address accountAddr) returns (bool) {
         // Check if address wasn't authorized or authorization has expired
         AuthPeriod period = _authorized[accountAddr];
         return (period.numDays > 0 && timeRemaining(period) >= 0);
