@@ -13,7 +13,7 @@ def replace_name(contract_name, line):
     i = line.find(contract_name)
     return line[:i] + "Example" + line[i+len(contract_name):]
 
-def read_contract(contract_path):
+def read_contract(contract_path, replace=True):
     """Read a Solidity file and expand imported contracts recursively.
     """
     # Separate into path and file
@@ -21,15 +21,19 @@ def read_contract(contract_path):
     contract_name = contract_file[:-4]
 
     output_lines = []
+    seen_libs = set()
     with open(contract_path) as f:
         for line in f:
             if line.startswith('import '):
                 lib_name = line[line.find('"')+1:line.rfind('"')]
                 lib_path = os.path.join(contract_dir, lib_name)
-                output_lines.extend(read_contract(lib_path))
-                output_lines.append('\n')
-            elif line.startswith('contract ' + contract_name) or \
-                    line.startswith('function ' + contract_name):
+                if lib_path not in seen_libs:
+                    output_lines.extend(read_contract(lib_path, replace=False))
+                    output_lines.append('\n\n')
+                    seen_libs.add(lib_path)
+                    print("Importing", lib_name)
+            elif replace and (line.startswith('contract ' + contract_name) or \
+                              line.startswith('function ' + contract_name)):
                 output_lines.append(replace_name(contract_name, line))
             else:
                 output_lines.append(line)
