@@ -2,10 +2,10 @@ contract RandomizedPriceFeedApi {
 
     // block time when the prices were last updated
     uint public updateTime;
-    
+
     mapping(bytes32 => uint)    _prices;
     mapping(bytes32 => uint)    _timestamps;
-    
+
     function RandomizedPriceFeedApi(){
         _prices['USD_ETH']  = 673478;
         _prices['BTC_ETH']  = 2189;
@@ -49,7 +49,12 @@ contract RandomizedPriceFeedApi {
     function getPrice(bytes32 symbol) returns(uint currPrice)
     {
         uint price = _prices[symbol];
-        price = price + 1000000;
+
+        uint shift = price / 10;
+        if(block.number % 2 == 0)
+            price = price + shift;
+        else price = price - shift;
+
         _prices[symbol] = price;
         updateTime = block.timestamp;
         _timestamps[symbol] = block.timestamp;
