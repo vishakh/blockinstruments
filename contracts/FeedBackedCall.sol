@@ -56,7 +56,7 @@ contract FeedBackedCall is nameRegAware {
         _feedName = feedName;
 
         // Strike price relative to market price
-        _strikePrice = (strikeToMarketRatio / 100) * _underlier.getPrice(feedName);
+        _strikePrice = (strikeToMarketRatio / 100) * getSpotPrice();
         _notional = notional;
 
         // Maturity relative to current block timestamp
@@ -66,7 +66,7 @@ contract FeedBackedCall is nameRegAware {
         return true;
     }
 
-    // Authorize trading accounts
+    // Authorize trading accounts for settlement
     function authorizeTradingAccounts(uint buffer) returns (bool) {
         if (msg.sender == _buyer) {
             _buyerAcct.authorize(this, _maturityInDays + buffer);
@@ -88,9 +88,8 @@ contract FeedBackedCall is nameRegAware {
         // the counterparty of the initializer of this contract.
         authorizeTradingAccounts(100);
 
-        // Need two valid trading accounts
-        if (_buyer == 0 || _seller == 0 ||
-            !_buyerAcct.isAuthorized(this) ||
+        // Need authorized trading accounts
+        if (!_buyerAcct.isAuthorized(this) ||
             !_sellerAcct.isAuthorized(this)) {
             return false;
         }
@@ -99,12 +98,14 @@ contract FeedBackedCall is nameRegAware {
         return true;
     }
 
-    // Withdraw and nullify the contract if not validated.
+    // Withdraw and nullify the contract if not validated
     function withdraw() returns (bool) {
         if (_isActive) {
             return false;
         }
-        if (msg.sender != _broker && msg.sender != _seller) {
+        if (msg.sender != _broker
+            && msg.sender != _buyer
+            && msg.sender != _seller) {
             return false;
         }
         // suicide(_broker);
@@ -130,8 +131,7 @@ contract FeedBackedCall is nameRegAware {
         _sellerAcct.deposit.value(this.balance)();
 
         // Seller provides the underlier at the spot price
-        uint spotPrice = _underlier.getPrice(_feedName);
-        _sellerAcct.withdraw(spotPrice * _notional);
+        _sellerAcct.withdraw(getSpotPrice() * _notional);
         _buyerAcct.deposit.value(this.balance)();
 
         _isActive = false;
@@ -152,7 +152,7 @@ contract FeedBackedCall is nameRegAware {
     }
 
     function getMoneyness() returns (int) {
-        uint spotPrice = _underlier.getPrice(_feedName);
+        uint spotPrice = getSpotPrice();
         if (spotPrice < _strikePrice) {
             return -1;
         } else if (spotPrice > _strikePrice) {
@@ -160,5 +160,13 @@ contract FeedBackedCall is nameRegAware {
         } else {
             return 0;
         }
+    }
+
+    function getSpotPrice() returns (uint) {
+        return _underlier.getPrice(_feedName);
+    }
+
+    function getValue() returns (int) {
+        return (int(getSpotPrice()) - int(_strikePrice)) * int(_notional);
     }
 }
