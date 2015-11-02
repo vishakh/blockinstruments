@@ -5,8 +5,8 @@ contract TradingAccount {
         uint        startTime;
     }
 
-    address                         _owner;
-    mapping(address => AuthPeriod)  _authorized;
+    address                         public _owner;
+    mapping(address => AuthPeriod)  public _authorized;
 
     function TradingAccount() {
         // Track the owner

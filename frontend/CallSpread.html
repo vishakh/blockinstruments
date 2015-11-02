@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Call Spread</title>
+    <script type="text/javascript" src="bower_components/bignumber.js/bignumber.min.js"></script>
+    <script type="text/javascript" src="bower_components/web3/dist/web3.js"></script>
+    <script>
+
+        function logToScreen(message)
+        {
+            document.getElementById('result').textContent = message;
+        }
+
+
+        var web3 = require('web3');
+        web3.setProvider(new web3.providers.HttpProvider('http://localhost:56000'));
+        var abi = [{"constant":false,"inputs":[{"name":"amount","type":"uint256"}],"name":"withdraw","outputs":[{"name":"","type":"bool"}],"type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"_addresses","outputs":[{"name":"","type":"address"}],"type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"_authorized","outputs":[{"name":"numDays","type":"uint256"},{"name":"startTime","type":"uint256"}],"type":"function"},{"constant":true,"inputs":[],"name":"_owner","outputs":[{"name":"","type":"address"}],"type":"function"},{"constant":false,"inputs":[{"name":"accountAddr","type":"address"},{"name":"numDays","type":"uint256"}],"name":"authorize","outputs":[{"name":"","type":"bool"}],"type":"function"},{"constant":false,"inputs":[],"name":"deposit","outputs":[{"name":"","type":"bool"}],"type":"function"},{"inputs":[],"type":"constructor"}];
+        var tradingAccountContract = web3.eth.contract(abi);
+        var tradingAccount;
+
+    </script>
+</head>
+<body>
+<h1>Call Spread</h1>
+
+<div style="background-color: azure " id="result"></div>
+
+<h2>Manage</h2>
+
+<table cellpadding="5" style="font-size: small">
+    <tr>
+        <td>
+            <div style="font-size: x-small">
+                <p>Call spread</p>
+                <p>0x00000000000000000000000000000000000000</p>
+                <p>Buy leg</p>
+                <p>0x00000000000000000000000000000000000000</p>
+                <p>Sell leg</p>
+                <p>0x00000000000000000000000000000000000000</p>
+            </div>
+        </td>
+        <td>
+            <table>
+                <tr>
+                    <th></th>
+                    <th>Buy leg</th>
+                    <th>Sell leg</th>
+                </tr>
+                <tr>
+                    <td>Underlier</td>
+                    <td>USD_ETH</td>
+                    <td>USD_ETH</td>
+                </tr>
+                <tr>
+                    <td>Strike</td>
+                    <td>0</td>
+                    <td>0</td>
+                </tr>
+                <tr>
+                    <td>Maturity</td>
+                    <td>0</td>
+                    <td>0</td>
+                </tr>
+                <tr>
+                    <td>Notional</td>
+                    <td>0</td>
+                    <td>0</td>
+                </tr>
+                <tr>
+                    <td>Validated?</td>
+                    <td>No</td>
+                    <td>No</td>
+                </tr>
+                <tr>
+                    <td>Mature?</td>
+                    <td>No</td>
+                    <td>No</td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+
+
+
+<p />
+
+
+
+<p></p>
+
+<button>Withdraw</button>
+<button>Validate</button>
+<button>Exercise</button>
+
+<h2>Load</h2>
+
+<input type="text" id="load_address" size="40" />
+<button>Load from address</button>
+
+<h2>Create</h2>
+
+<table>
+    <tr>
+        <td>Buyer</td>
+        <td><input type="text" id="buyers_account_address" size="40" /></td>
+    </tr>
+    <tr>
+        <td>Seller</td>
+        <td><input type="text" id="sellers_account_address" size="40" /></td>
+    </tr>
+</table>
+
+<!--<table>
+    <tr>
+        <th>Buy option</th>
+        <th>Sell option</th>
+    </tr>
+    <tr>
+        <td style="background-color: gainsboro">
+            <p>Underlier</p>
+            <select id="buy_undrlier">
+                <option>USD_ETH</option>
+            </select>
+            <p>Strike</p>
+            <input type="text" id="buy_strike" size="4" />
+            <p>Maturity in days</p>
+            <input type="text" id="buy_maturity" size="4"/>
+            <p>Notional in ETH</p>
+            <input type="text" id="buy_notional" size="4"/>
+        </td>
+        <td style="background-color: gainsboro">
+            <p>Underlier</p>
+            <select id="buy_undrlier">
+                <option>USD_ETH</option>
+            </select>
+            <p>Strike</p>
+            <input type="text" id="buy_strike" size="4" />
+            <p>Maturity in days</p>
+            <input type="text" id="buy_maturity" size="4"/>
+            <p>Notional in ETH</p>
+            <input type="text" id="buy_notional" size="4"/>
+        </td>
+    </tr>
+</table>-->
+<p></p>
+<table>
+    <tr>
+        <th></th>
+        <th>Buy leg</th>
+        <th>Sell leg</th>
+    </tr>
+    <tr>
+        <td>Underlier</td>
+        <td>
+            <select id="buy_undrlier">
+                <option>USD_ETH</option>
+            </select>
+        </td>
+        <td>
+            <select id="buy_undrlier">
+                <option>USD_ETH</option>
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <td>Strike</td>
+        <td><input type="text" id="buy_strike" size="6" /></td>
+        <td><input type="text" id="buy_strike" size="6" /></td>
+    </tr>
+    <tr>
+        <td>Maturity</td>
+        <td><input type="text" id="buy_strike" size="6" /></td>
+        <td><input type="text" id="buy_strike" size="6" /></td>
+    </tr>
+    <tr>
+        <td>Notional</td>
+        <td><input type="text" id="buy_strike" size="6" /></td>
+        <td><input type="text" id="buy_strike" size="6" /></td>
+    </tr>
+</table>
+
+<button>Create</button>
+
+</body>
+</html>
