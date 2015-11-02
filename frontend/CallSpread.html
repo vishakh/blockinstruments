@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Call Spread</title>
+    <script type="text/javascript" src="bower_components/bignumber.js/bignumber.min.js"></script>
+    <script type="text/javascript" src="bower_components/web3/dist/web3.js"></script>
+    <script>
+
+        function logToScreen(message)
+        {
+            document.getElementById('result').textContent = message;
+        }
+
+
+        var web3 = require('web3');
+        web3.setProvider(new web3.providers.HttpProvider('http://localhost:56000'));
+        var abi = [{"constant":false,"inputs":[{"name":"amount","type":"uint256"}],"name":"withdraw","outputs":[{"name":"","type":"bool"}],"type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"_addresses","outputs":[{"name":"","type":"address"}],"type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"_authorized","outputs":[{"name":"numDays","type":"uint256"},{"name":"startTime","type":"uint256"}],"type":"function"},{"constant":true,"inputs":[],"name":"_owner","outputs":[{"name":"","type":"address"}],"type":"function"},{"constant":false,"inputs":[{"name":"accountAddr","type":"address"},{"name":"numDays","type":"uint256"}],"name":"authorize","outputs":[{"name":"","type":"bool"}],"type":"function"},{"constant":false,"inputs":[],"name":"deposit","outputs":[{"name":"","type":"bool"}],"type":"function"},{"inputs":[],"type":"constructor"}];
+        var tradingAccountContract = web3.eth.contract(abi);
+        var tradingAccount;
+
+    </script>
+</head>
+<body>
+<h1>Call Spread</h1>
+
+<div style="background-color: azure " id="result"></div>
+
+<div style="font-size: x-small">
+<p>Call spread</p>
+<p>0x00000000000000000000000000000000000000</p>
+<p>Buy leg</p>
+<p>0x00000000000000000000000000000000000000</p>
+<p>Sell leg</p>
+<p>0x00000000000000000000000000000000000000</p>
+</div>
+
+<h2>Load</h2>
+
+<input type="text" id="load_address" size="40" />
+<button>Load from address</button>
+
+<h2>Create</h2>
+
+<p>Buyer's account address</p>
+<p>Seller's account address</p>
+<table>
+    <tr>
+        <th>Buy option</th>
+        <th>Sell option</th>
+    </tr>
+    <tr>
+        <td style="background-color: gainsboro">
+            <p>Underlier</p>
+            <p>Strike</p>
+            <p>Maturity</p>
+            <p>Notional</p>
+        </td>
+        <td style="background-color: gainsboro">
+            <p>Underlier</p>
+            <p>Strike</p>
+            <p>Maturity</p>
+            <p>Notional</p>
+        </td>
+    </tr>
+</table>
+
+<button>Create</button>
+
+</body>
+</html>
