@@ -1,7 +1,7 @@
 contract TradingAccount {
 
     struct AuthPeriod {
-        uint        numDays;
+        uint        duration;       // currently in minutes
         uint        startTime;
     }
 
@@ -42,17 +42,17 @@ contract TradingAccount {
         return false;
     }
 
-    function authorize(address accountAddr, uint numDays) returns (bool) {
+    function authorize(address accountAddr, uint duration) returns (bool) {
         if (tx.origin != _owner) {
             return false;
         }
-        if (numDays == 0) {
+        if (duration == 0) {
             return false;
         }
         AuthPeriod period = _authorized[accountAddr];
-        if (period.numDays == 0 || timeRemaining(period) < numDays) {
+        if (period.duration == 0 || timeRemaining(period) < duration) {
             // Add this account to the list of authorized accounts
-            _authorized[accountAddr] = AuthPeriod(numDays, block.timestamp);
+            _authorized[accountAddr] = AuthPeriod(duration, block.timestamp);
             // TODO: retain AuthPeriod history in linked list for revocation
             return true;
         }
@@ -62,12 +62,11 @@ contract TradingAccount {
     function isAuthorized(address accountAddr) returns (bool) {
         // Check if address wasn't authorized or authorization has expired
         AuthPeriod period = _authorized[accountAddr];
-        return (period.numDays > 0 && timeRemaining(period) >= 0);
+        return (period.duration > 0 && timeRemaining(period) >= 0);
     }
 
     function timeRemaining(AuthPeriod period) private returns (uint) {
-        uint timeElapsedInSecs = block.timestamp - period.startTime;
-        uint timeElapsedInDays = timeElapsedInSecs / 86400;
-        return period.numDays - timeElapsedInDays;
+        uint timeElapsed = (block.timestamp - period.startTime) / 60;
+        return period.duration - timeElapsed;
     }
 }

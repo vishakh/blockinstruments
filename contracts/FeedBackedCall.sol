@@ -22,8 +22,8 @@ contract FeedBackedCall is nameRegAware {
     uint public         _notional;
     PriceFeedApi        _underlier;
 
-    // Maturity details
-    uint public         _maturityInDays;
+    // Maturity condition
+    uint public         _timeToMaturity;
     uint public         _startTime;
 
     function FeedBackedCall() {
@@ -40,7 +40,7 @@ contract FeedBackedCall is nameRegAware {
         bytes32 feedName,
         uint    strikeToMarketRatio,
         uint    notional,
-        uint    maturityInDays) returns (bool) {
+        uint    timeToMaturity) returns (bool) {
 
         // Trading accounts
         _buyer = buyer;
@@ -49,7 +49,7 @@ contract FeedBackedCall is nameRegAware {
         _sellerAcct = TradingAccount(seller);
 
         // Authorize trading account of msg.sender
-        authorizeTradingAccounts(100);
+        authorizeTradingAccounts(_timeToMaturity * 3);
 
         // Underlier feed defaults to "ether-camp/price-feed"
         if (feedProvider == 0) {
@@ -63,8 +63,8 @@ contract FeedBackedCall is nameRegAware {
         _strikePrice = (strikeToMarketRatio / 100) * getSpotPrice();
         _notional = notional;
 
-        // Maturity relative to current block timestamp
-        _maturityInDays = maturityInDays;
+        // Maturity relative to current timestamp and denominated in minutes
+        _timeToMaturity = timeToMaturity;
         _startTime = block.timestamp;
 
         return true;
@@ -73,11 +73,11 @@ contract FeedBackedCall is nameRegAware {
     // Authorize trading accounts for settlement
     function authorizeTradingAccounts(uint buffer) returns (bool) {
         if (msg.sender == _buyer) {
-            _buyerAcct.authorize(this, _maturityInDays + buffer);
+            _buyerAcct.authorize(this, _timeToMaturity + buffer);
             return true;
         }
         if (msg.sender  == _seller) {
-            _sellerAcct.authorize(this, _maturityInDays + buffer);
+            _sellerAcct.authorize(this, _timeToMaturity + buffer);
             return true;
         }
         return false;
@@ -90,7 +90,7 @@ contract FeedBackedCall is nameRegAware {
         }
         // Authorize trading account of msg.sender. This is assumed to be
         // the counterparty of the initializer of this contract.
-        authorizeTradingAccounts(100);
+        authorizeTradingAccounts(_timeToMaturity * 3);
 
         // Need authorized trading accounts
         if (!_buyerAcct.isAuthorized(this) ||
@@ -146,9 +146,8 @@ contract FeedBackedCall is nameRegAware {
     // ===== Utility functions ===== //
 
     function isMature() returns (bool) {
-        uint timeElapsedInSecs = block.timestamp - _startTime;
-        uint timeElapsedInDays = timeElapsedInSecs / 86400;
-        if (timeElapsedInDays >= _maturityInDays) {
+        uint timeElapsed = (block.timestamp - _startTime) / 60;
+        if (timeElapsed >= _timeToMaturity) {
             return true;
         } else {
             return false;

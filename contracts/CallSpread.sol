@@ -21,7 +21,7 @@ contract CallSpread {
 
     // Other information
     uint public         _marginPercent;
-    uint public         _maxMaturityInDays;
+    uint public         _maxTimeToMaturity;
 
     function CallSpread() {
         _broker = msg.sender;
@@ -44,9 +44,9 @@ contract CallSpread {
         _marginPercent = marginPercent;
 
         // Record the maximum maturity of the legs
-        _maxMaturityInDays = _buyerLeg._maturityInDays();
-        if (_maxMaturityInDays < _sellerLeg._maturityInDays()) {
-            _maxMaturityInDays = _sellerLeg._maturityInDays();
+        _maxTimeToMaturity = _buyerLeg._timeToMaturity();
+        if (_maxTimeToMaturity < _sellerLeg._timeToMaturity()) {
+            _maxTimeToMaturity = _sellerLeg._timeToMaturity();
         }
 
         // Trading accounts
@@ -56,18 +56,18 @@ contract CallSpread {
         _sellerAcct = TradingAccount(seller);
 
         // Authorize trading account of msg.sender
-        authorizeTradingAccounts(100);
+        authorizeTradingAccounts(_maxTimeToMaturity * 3);
     }
 
     // Authorize trading accounts for margin calls
     function authorizeTradingAccounts(uint buffer) returns (bool) {
 
         if (msg.sender == _buyer) {
-            _buyerAcct.authorize(this, _maxMaturityInDays + buffer);
+            _buyerAcct.authorize(this, _maxTimeToMaturity + buffer);
             return true;
         }
         if (msg.sender  == _seller) {
-            _sellerAcct.authorize(this, _maxMaturityInDays + buffer);
+            _sellerAcct.authorize(this, _maxTimeToMaturity + buffer);
             return true;
         }
         return false;
@@ -80,7 +80,7 @@ contract CallSpread {
         }
         // Authorize trading account of msg.sender. This is assumed to be
         // the counterparty of the initializer of this contract.
-        authorizeTradingAccounts(100);
+        authorizeTradingAccounts(_maxTimeToMaturity * 3);
 
         // Need authorized trading accounts
         if (!_buyerAcct.isAuthorized(this) ||
