@@ -36,7 +36,7 @@ contract FeedBackedCall is nameRegAware {
     function initialize(
         address seller,
         address buyer,
-        bytes32 providerName,
+        address feedProvider,
         bytes32 feedName,
         uint    strikeToMarketRatio,
         uint    notional,
@@ -51,8 +51,12 @@ contract FeedBackedCall is nameRegAware {
         // Authorize trading account of msg.sender
         authorizeTradingAccounts(100);
 
-        // Real-world provider: "ether-camp/price-feed"
-        _underlier = PriceFeedApi(named(providerName));
+        // Underlier feed defaults to "ether-camp/price-feed"
+        if (feedProvider == 0) {
+            _underlier = PriceFeedApi(named("ether-camp/price-feed"));
+        } else {
+            _underlier = PriceFeedApi(feedProvider);
+        }
         _feedName = feedName;
 
         // Strike price relative to market price
