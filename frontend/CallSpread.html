@@ -16,104 +16,78 @@
         }
 
         function createBuyOption() {
-            buyOption = feedBackedCallContract.new(
-                    {
-                        from: web3.eth.accounts[0],
-                        data: feedBackedCallBinary,
-                        gas: 3000000
-                    }, function (e, contract) {
-                        if (typeof contract.address != 'undefined') {
-                            console.log(e, contract);
-                            console.log('Contract mined! address: ' + contract.address + ' transactionHash: ' + contract.transactionHash);
-                            document.getElementById('buy_leg_address').textContent = contract.address;
-                            logToScreen("Buy leg created at " + contract.address);
-                            refresh();
-                        }
-                    });
+            return new Promise(function(resolve, reject) {
+                    buyOption = feedBackedCallContract.new(
+                            {
+                                from: web3.eth.accounts[0],
+                                data: feedBackedCallBinary,
+                                gas: 3000000
+                            }, function (e, contract) {
+                                if (e != null)
+                                    reject(e);
+                                else if (typeof contract.address != 'undefined') {
+                                    console.log(e, contract);
+                                    console.log('Contract mined! address: ' + contract.address + ' transactionHash: ' + contract.transactionHash);
+                                    document.getElementById('buy_leg_address').textContent = contract.address;
+                                    logToScreen("Buy leg created at " + contract.address);
+                                    resolve(contract);
+                                }
+                            });
+            });
         }
 
-        function createSellOption() {
-            sellOption = feedBackedCallContract.new(
-                    {
-                        from: web3.eth.accounts[0],
-                        data: feedBackedCallBinary,
-                        gas: 3000000
-                    }, function (e, contract) {
-                        if (typeof contract.address != 'undefined') {
-                            console.log(e, contract);
-                            console.log('Contract mined! address: ' + contract.address + ' transactionHash: ' + contract.transactionHash);
-                            document.getElementById('sell_leg_address').textContent = contract.address;
-                            logToScreen("Buy leg created at " + contract.address);
-                            refresh();
-                        }
-                    });
+        function createSellOption(callback) {
+            return new Promise(function(resolve, reject) {
+                sellOption = feedBackedCallContract.new(
+                        {
+                            from: web3.eth.accounts[0],
+                            data: feedBackedCallBinary,
+                            gas: 3000000
+                        }, function (e, contract) {
+                            if (e != null)
+                                reject(e);
+                            else if (typeof contract.address != 'undefined') {
+                                console.log(e, contract);
+                                console.log('Contract mined! address: ' + contract.address + ' transactionHash: ' + contract.transactionHash);
+                                document.getElementById('sell_leg_address').textContent = contract.address;
+                                logToScreen("Sell leg created at " + contract.address);
+                                resolve(contract);
+                            }
+                        });
+            });
         }
 
-        function createCallSpread() {
-            callSpread = callSpreadContract.new(
-                    {
-                        from: web3.eth.accounts[0],
-                        data: callSpreadBinary,
-                        gas: 3000000
-                    }, function (e, contract) {
-                        if (typeof contract.address != 'undefined') {
-                            console.log(e, contract);
-                            console.log('Contract mined! address: ' + contract.address + ' transactionHash: ' + contract.transactionHash);
-                            document.getElementById('call_spread_address').textContent = contract.address;
-                            logToScreen("Call spread created at " + contract.address);
-                            refresh();
-                        }
-                    });
+        function createCallSpread(callback) {
+            return new Promise(function(resolve, reject) {
+                callSpread = callSpreadContract.new(
+                        {
+                            from: web3.eth.accounts[0],
+                            data: callSpreadBinary,
+                            gas: 3000000
+                        }, function (e, contract) {
+                            if (e != null)
+                                reject(e);
+                            else if (typeof contract.address != 'undefined') {
+                                console.log(e, contract);
+                                console.log('Contract mined! address: ' + contract.address + ' transactionHash: ' + contract.transactionHash);
+                                document.getElementById('call_spread_address').textContent = contract.address;
+                                logToScreen("Call spread created at " + contract.address);
+                                resolve(contract);
+                            }
+                        });
+            });
         }
 
         function createContracts() {
 
             logToScreen("Creating contracts..");
 
-            /*var p = new Promise(
-                    function (resolve, reject) {
-                        buyOption = feedBackedCallContract.new(
-                                {
-                                    from: web3.eth.accounts[0],
-                                    data: feedBackedCallBinary,
-                                    gas: 3
-                                }, function (e, contract) {
-                                    if (e != null)
-                                        reject(e);
-                                    else if (typeof contract.address != 'undefined') {
-                                        console.log(e, contract);
-                                        console.log('Contract mined! address: ' + contract.address + ' transactionHash: ' + contract.transactionHash);
-                                        document.getElementById('buy_leg_address').textContent = contract.address;
-                                        logToScreen("Buy leg created at " + contract.address);
-                                        resolve('Hooray!');
-                                    }
-                                });
-                    }).then(function (result) {
-                console.log("message: ", result);
-                return result;
-            });*/
-
-            var sequence = Promise.resolve();
-            sequence.then(function () {
-                buyOption = feedBackedCallContract.new(
-                        {
-                            from: web3.eth.accounts[0],
-                            data: feedBackedCallBinary,
-                            gas: 3
-                        }, function (e, contract) {
-                            else if (typeof contract.address != 'undefined') {
-                                console.log(e, contract);
-                                console.log('Contract mined! address: ' + contract.address + ' transactionHash: ' + contract.transactionHash);
-                                document.getElementById('buy_leg_address').textContent = contract.address;
-                                logToScreen("Buy leg created at " + contract.address);
-                                return('Hooray!');
-                            }
-                        });
-            }).then(function (result) {
-                console.log("message2: ", result);
-                return result;
-            }).catch(function (error) {
-                console.log("caught: ", error);
+            createBuyOption()
+            .then(createSellOption())
+            .then(createCallSpread())
+            .catch(function (error) {
+                console.log(error);
+                logToScreen("Could not create contracts.");
             });
         }
 
