@@ -8,7 +8,12 @@
     <script>
 
         function logToScreen(message) {
-            document.getElementById('result').textContent = message;
+            var exisiting = document.getElementById('result').innerHTML;
+            document.getElementById('result').innerHTML = exisiting + "<br/>" + message;
+            var objDiv = document.getElementById('result');
+            objDiv.scrollTop = objDiv.scrollHeight;
+
+
         }
 
         function refresh() {
@@ -17,15 +22,16 @@
 
         function createBuyOption() {
             return new Promise(function(resolve, reject) {
+                logToScreen("Creating buy leg..");
                     buyOption = feedBackedCallContract.new(
                             {
                                 from: web3.eth.accounts[0],
                                 data: feedBackedCallBinary,
                                 gas: 3000000
                             }, function (e, contract) {
-                                if (e != null)
-                                    reject(e);
-                                else if (typeof contract.address != 'undefined') {
+                                //if (e != null)
+                                //    reject(e);
+                                if (typeof contract.address != 'undefined') {
                                     console.log(e, contract);
                                     console.log('Contract mined! address: ' + contract.address + ' transactionHash: ' + contract.transactionHash);
                                     document.getElementById('buy_leg_address').textContent = contract.address;
@@ -36,17 +42,18 @@
             });
         }
 
-        function createSellOption(callback) {
+        function createSellOption() {
             return new Promise(function(resolve, reject) {
+                logToScreen("Creating sell leg..");
                 sellOption = feedBackedCallContract.new(
                         {
                             from: web3.eth.accounts[0],
                             data: feedBackedCallBinary,
                             gas: 3000000
                         }, function (e, contract) {
-                            if (e != null)
-                                reject(e);
-                            else if (typeof contract.address != 'undefined') {
+                            //if (e != null)
+                            //    reject(e);
+                            if (typeof contract.address != 'undefined') {
                                 console.log(e, contract);
                                 console.log('Contract mined! address: ' + contract.address + ' transactionHash: ' + contract.transactionHash);
                                 document.getElementById('sell_leg_address').textContent = contract.address;
@@ -57,17 +64,18 @@
             });
         }
 
-        function createCallSpread(callback) {
+        function createCallSpread() {
             return new Promise(function(resolve, reject) {
+                logToScreen("Creating call spread..");
                 callSpread = callSpreadContract.new(
                         {
                             from: web3.eth.accounts[0],
                             data: callSpreadBinary,
                             gas: 3000000
                         }, function (e, contract) {
-                            if (e != null)
-                                reject(e);
-                            else if (typeof contract.address != 'undefined') {
+                            //if (e != null)
+                            //    reject(e);
+                            if (typeof contract.address != 'undefined') {
                                 console.log(e, contract);
                                 console.log('Contract mined! address: ' + contract.address + ' transactionHash: ' + contract.transactionHash);
                                 document.getElementById('call_spread_address').textContent = contract.address;
@@ -78,271 +86,122 @@
             });
         }
 
+        function initializeBuyOption() {
+            return new Promise(function(resolve, reject) {
+                logToScreen("Initializing buy leg..");
+                var buyer = document.getElementById("buyers_account_address").value;
+                var seller = document.getElementById("sellers_account_address").value;
+                var underlier = document.getElementById("buy_underlier").value;
+                var strike = document.getElementById("buy_strike").value;
+                var maturity = document.getElementById("buy_maturity").value;
+                var notional = document.getElementById("buy_notional").value;
+                console.log(buyer, seller, priceFeedAddress, underlier, strike, maturity, notional);
+                buyOption.initialize.sendTransaction(
+                        seller,
+                        buyer,
+                        priceFeedAddress,
+                        underlier,
+                        1,
+                        notional,
+                        maturity,
+                        {from: web3.eth.defaultAccount, value: 0, gas: 2000000},
+                        function (err, result) {
+                            if (err != null)
+                                reject(err);
+                            console.log(err, result);
+                            logToScreen("Initialized buy option.");
+                            resolve(result);
+                        }
+                );
+            });
+        }
+
+        function initializeSellOption() {
+            return new Promise(function(resolve, reject) {
+                logToScreen("Initializing sell leg..");
+                var buyer = document.getElementById("buyers_account_address").value;
+                var seller = document.getElementById("sellers_account_address").value;
+                var underlier = document.getElementById("sell_underlier").value;
+                var strike = document.getElementById("sell_strike").value;
+                var maturity = document.getElementById("sell_maturity").value;
+                var notional = document.getElementById("sell_notional").value;
+                sellOption.initialize.sendTransaction(
+                        seller,
+                        buyer,
+                        priceFeedAddress,
+                        underlier,
+                        1,
+                        notional * -1,
+                        maturity,
+                        {from: web3.eth.defaultAccount, value: 0, gas: 2000000},
+                        function (err, result) {
+                            if (err != null)
+                                reject(err);
+                            console.log(err, result);
+                            logToScreen("Initialized sell option.");
+                            resolve(result);
+                        }
+                );
+            });
+        }
+
+        function initializeCallSpread() {
+            return new Promise(function(resolve, reject) {
+                logToScreen("Initializing call spread..");
+                var buyer = document.getElementById("buyers_account_address").value;
+                var seller = document.getElementById("sellers_account_address").value;
+                var buyLegAddress = document.getElementById("buy_leg_address").value;
+                var sellLegAddress = document.getElementById("sell_leg_address").value;
+                callSpread.initialize.sendTransaction(
+                        seller,
+                        buyer,
+                        sellLegAddress,
+                        buyLegAddress,
+                        120,
+                        {from: web3.eth.defaultAccount, value: 0, gas: 2000000},
+                        function (err, result) {
+                            if (err != null)
+                                reject(err);
+                            console.log(err, result);
+                            logToScreen("Initialized call spread.");
+                            resolve(result);
+                        }
+                );
+            });
+        }
+
         function createContracts() {
 
             logToScreen("Creating contracts..");
 
             createBuyOption()
-            .then(createSellOption())
-            .then(createCallSpread())
+            .then(createSellOption)
+            .then(createCallSpread)
+            .then(initializeBuyOption)
+            .then(initializeSellOption)
+            .then(initializeCallSpread)
+            .then(function(value){logToScreen("Done creating contracts.")})
             .catch(function (error) {
                 console.log(error);
-                logToScreen("Could not create contracts.");
+                logToScreen("Could not create contracts. See console for details.");
             });
         }
 
-        function intializeBuyOption() {
-            buyOption.initialize.sendTransaction(
-                    document.getElementById("buyers_account_address"),
-                    document.getElementById("sellers_account_address"),
-                    priceFeedAddress,
-                    "USD_ETH",
-                    1,
-                    100,
-                    20,
-                    {from: web3.eth.defaultAccount, value: 0, gas: 2000000},
-                    function (err, result) {
-                        console.log(err, result);
-                        logToScreen("Initialized buy option.");
-                    }
-            );
+        function initializeContracts() {
+            initializeBuyOption()
+            .then(initializeSellOption)
+            .then(initializeCallSpread)
+            .catch(function (error) {
+                console.log(error);
+                logToScreen("Could not create contracts. See console for details.");
+            });
         }
 
         var callSpreadBinary = "60606040525b33600060026101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908302179055506000600060006101000a81548160ff021916908302179055506000600060016101000a81548160ff021916908302179055505b6116c9806100716000396000f3606060405236156100d6576000357c010000000000000000000000000000000000000000000000000000000090048062e1ffbb146100d857806325a34aca146100fb5780632a7ce0261461011e5780633ccfd60b146101575780634355f1ec1461017a5780635c36b186146101b35780636901f668146101d65780638ec89e4f146101f9578063913bb2631461021c5780639b7972a11461023f578063d32cb0fe14610262578063d617d00a14610285578063dd9bf998146102be578063ecc7296b146102ea578063f7013ef61461030d576100d6565b005b6100e560048050506103fe565b6040518082815260200191505060405180910390f35b6101086004805050611569565b6040518082815260200191505060405180910390f35b61012b6004805050610383565b604051808273ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b6101646004805050610c47565b6040518082815260200191505060405180910390f35b61018760048050506103cf565b604051808273ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b6101c060048050506116b5565b6040518082815260200191505060405180910390f35b6101e3600480505061093b565b6040518082815260200191505060405180910390f35b610206600480505061035d565b6040518082815260200191505060405180910390f35b6102296004805050610370565b6040518082815260200191505060405180910390f35b61024c60048050506103f5565b6040518082815260200191505060405180910390f35b61026f6004805050610f28565b6040518082815260200191505060405180910390f35b61029260048050506103a9565b604051808273ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b6102d460048080359060200190919050506106f7565b6040518082815260200191505060405180910390f35b6102f7600480505061126b565b6040518082815260200191505060405180910390f35b6103476004808035906020019091908035906020019091908035906020019091908035906020019091908035906020019091905050610407565b6040518082815260200191505060405180910390f35b600060009054906101000a900460ff1681565b600060019054906101000a900460ff1681565b600260009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b600060029054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b600160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b60076000505481565b60086000505481565b600082600560006101000a81548173ffffffffffffffffffffffffffffffffffffffff0219169083021790555083600660006101000a81548173ffffffffffffffffffffffffffffffffffffffff0219169083021790555081600760005081905550600560009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663b570571e604051817c01000000000000000000000000000000000000000000000000000000000281526004018090506020604051808303816000876161da5a03f1156100025750505060405180519060200150600860005081905550600660009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663b570571e604051817c01000000000000000000000000000000000000000000000000000000000281526004018090506020604051808303816000876161da5a03f1156100025750505060405180519060200150600860005054101561062f57600660009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663b570571e604051817c01000000000000000000000000000000000000000000000000000000000281526004018090506020604051808303816000876161da5a03f11561000257505050604051805190602001506008600050819055505b84600160006101000a81548173ffffffffffffffffffffffffffffffffffffffff0219169083021790555085600260006101000a81548173ffffffffffffffffffffffffffffffffffffffff0219169083021790555084600360006101000a81548173ffffffffffffffffffffffffffffffffffffffff0219169083021790555085600460006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908302179055506106ec6003600860005054026106f7565b505b95945050505050565b6000600160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff16141561081357600360009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663c1dbd9b2308460086000505401604051837c0100000000000000000000000000000000000000000000000000000000028152600401808373ffffffffffffffffffffffffffffffffffffffff168152602001828152602001925050506020604051808303816000876161da5a03f11561000257505050604051805190602001505060019050610936565b600260009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff16141561092d57600460009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663c1dbd9b2308460086000505401604051837c0100000000000000000000000000000000000000000000000000000000028152600401808373ffffffffffffffffffffffffffffffffffffffff168152602001828152602001925050506020604051808303816000876161da5a03f11561000257505050604051805190602001505060019050610936565b60009050610936565b919050565b6000600060009054906101000a900460ff16806109645750600060019054906101000a900460ff165b156109725760019050610c44565b6109836003600860005054026106f7565b50600360009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663fe9fbb8030604051827c0100000000000000000000000000000000000000000000000000000000028152600401808273ffffffffffffffffffffffffffffffffffffffff1681526020019150506020604051808303816000876161da5a03f11561000257505050604051805190602001501580610ae35750600460009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663fe9fbb8030604051827c0100000000000000000000000000000000000000000000000000000000028152600401808273ffffffffffffffffffffffffffffffffffffffff1681526020019150506020604051808303816000876161da5a03f1156100025750505060405180519060200150155b15610af15760009050610c44565b600560009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16636901f668604051817c01000000000000000000000000000000000000000000000000000000000281526004018090506020604051808303816000876161da5a03f11561000257505050604051805190602001501580610c145750600660009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16636901f668604051817c01000000000000000000000000000000000000000000000000000000000281526004018090506020604051808303816000876161da5a03f1156100025750505060405180519060200150155b15610c225760009050610c44565b6001600060006101000a81548160ff0219169083021790555060019050610c44565b90565b6000600060009054906101000a900460ff1615610c675760009050610f25565b600060029054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff1614158015610d135750600160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff1614155b8015610d6d5750600260009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff1614155b15610d7b5760009050610f25565b600560009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16633ccfd60b604051817c01000000000000000000000000000000000000000000000000000000000281526004018090506020604051808303816000876161da5a03f115610002575050506040518051906020015050600660009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16633ccfd60b604051817c01000000000000000000000000000000000000000000000000000000000281526004018090506020604051808303816000876161da5a03f115610002575050506040518051906020015050600060029054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1660003073ffffffffffffffffffffffffffffffffffffffff1631604051809050600060405180830381858888f19350505050506001600060016101000a81548160ff0219169083021790555060019050610f25565b90565b60006000600260009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff16141561101457600660009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663d32cb0fe604051817c01000000000000000000000000000000000000000000000000000000000281526004018090506020604051808303816000876161da5a03f1156100025750505060405180519060200150905080505b600160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff16141561110557611072611569565b50600560009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663d32cb0fe604051817c01000000000000000000000000000000000000000000000000000000000281526004018090506020604051808303816000876161da5a03f1156100025750505060405180519060200150905080505b600660009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663913bb263604051817c01000000000000000000000000000000000000000000000000000000000281526004018090506020604051808303816000876161da5a03f115610002575050506040518051906020015080156112275750600560009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663913bb263604051817c01000000000000000000000000000000000000000000000000000000000281526004018090506020604051808303816000876161da5a03f11561000257505050604051805190602001505b1561125f576000600060006101000a81548160ff021916908302179055506001600060016101000a81548160ff021916908302179055505b809150611267565b5090565b60006000600060006000600560009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff166320965255604051817c01000000000000000000000000000000000000000000000000000000000281526004018090506020604051808303816000876161da5a03f11561000257505050604051805190602001509350600660009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff166320965255604051817c01000000000000000000000000000000000000000000000000000000000281526004018090506020604051808303816000876161da5a03f115610002575050506040518051906020015092508284039150606460076000505483020490503073ffffffffffffffffffffffffffffffffffffffff163181111561147857600460009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16632e1a7d4d3073ffffffffffffffffffffffffffffffffffffffff16318303604051827c0100000000000000000000000000000000000000000000000000000000028152600401808281526020019150506020604051808303816000876161da5a03f115610002575050506040518051906020015050611541565b3073ffffffffffffffffffffffffffffffffffffffff163181101561154057600460009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663d0e30db0823073ffffffffffffffffffffffffffffffffffffffff163103604051827c010000000000000000000000000000000000000000000000000000000002815260040180905060206040518083038185886185025a03f115610002575050505060405180519060200150505b5b803073ffffffffffffffffffffffffffffffffffffffff1631149450611562565b5050505090565b6000600560009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663ae4e7fdf604051817c01000000000000000000000000000000000000000000000000000000000281526004018090506020604051808303816000876161da5a03f1156100025750505060405180519060200150156116a957600460009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663d0e30db03073ffffffffffffffffffffffffffffffffffffffff1631604051827c010000000000000000000000000000000000000000000000000000000002815260040180905060206040518083038185886185025a03f11561000257505050506040518051906020015090506116b2565b600090506116b2565b90565b60006116bf61126b565b90506116c6565b9056";
-        var callSpreadABI = [{
-            "constant": true,
-            "inputs": [],
-            "name": "_maxTimeToMaturity",
-            "outputs": [{"name": "", "type": "uint256"}],
-            "type": "function"
-        }, {
-            "constant": false,
-            "inputs": [],
-            "name": "returnMargin",
-            "outputs": [{"name": "", "type": "bool"}],
-            "type": "function"
-        }, {
-            "constant": true,
-            "inputs": [],
-            "name": "_seller",
-            "outputs": [{"name": "", "type": "address"}],
-            "type": "function"
-        }, {
-            "constant": false,
-            "inputs": [],
-            "name": "withdraw",
-            "outputs": [{"name": "", "type": "bool"}],
-            "type": "function"
-        }, {
-            "constant": true,
-            "inputs": [],
-            "name": "_buyer",
-            "outputs": [{"name": "", "type": "address"}],
-            "type": "function"
-        }, {
-            "constant": false,
-            "inputs": [],
-            "name": "ping",
-            "outputs": [{"name": "", "type": "bool"}],
-            "type": "function"
-        }, {
-            "constant": false,
-            "inputs": [],
-            "name": "validate",
-            "outputs": [{"name": "", "type": "bool"}],
-            "type": "function"
-        }, {
-            "constant": true,
-            "inputs": [],
-            "name": "_isActive",
-            "outputs": [{"name": "", "type": "bool"}],
-            "type": "function"
-        }, {
-            "constant": true,
-            "inputs": [],
-            "name": "_isComplete",
-            "outputs": [{"name": "", "type": "bool"}],
-            "type": "function"
-        }, {
-            "constant": true,
-            "inputs": [],
-            "name": "_marginPercent",
-            "outputs": [{"name": "", "type": "uint256"}],
-            "type": "function"
-        }, {
-            "constant": false,
-            "inputs": [],
-            "name": "exercise",
-            "outputs": [{"name": "", "type": "bool"}],
-            "type": "function"
-        }, {
-            "constant": true,
-            "inputs": [],
-            "name": "_broker",
-            "outputs": [{"name": "", "type": "address"}],
-            "type": "function"
-        }, {
-            "constant": false,
-            "inputs": [{"name": "buffer", "type": "uint256"}],
-            "name": "authorizeTradingAccounts",
-            "outputs": [{"name": "", "type": "bool"}],
-            "type": "function"
-        }, {
-            "constant": false,
-            "inputs": [],
-            "name": "rebalanceMargin",
-            "outputs": [{"name": "", "type": "bool"}],
-            "type": "function"
-        }, {
-            "constant": false,
-            "inputs": [{"name": "seller", "type": "address"}, {
-                "name": "buyer",
-                "type": "address"
-            }, {"name": "sellerLeg", "type": "address"}, {
-                "name": "buyerLeg",
-                "type": "address"
-            }, {"name": "marginPercent", "type": "uint256"}],
-            "name": "initialize",
-            "outputs": [{"name": "", "type": "bool"}],
-            "type": "function"
-        }, {"inputs": [], "type": "constructor"}];
+        var callSpreadABI = [{"constant":true,"inputs":[],"name":"_maxTimeToMaturity","outputs":[{"name":"","type":"uint256"}],"type":"function"},{"constant":false,"inputs":[],"name":"returnMargin","outputs":[{"name":"","type":"bool"}],"type":"function"},{"constant":true,"inputs":[],"name":"_seller","outputs":[{"name":"","type":"address"}],"type":"function"},{"constant":false,"inputs":[],"name":"withdraw","outputs":[{"name":"","type":"bool"}],"type":"function"},{"constant":true,"inputs":[],"name":"_buyer","outputs":[{"name":"","type":"address"}],"type":"function"},{"constant":false,"inputs":[],"name":"ping","outputs":[{"name":"","type":"bool"}],"type":"function"},{"constant":false,"inputs":[],"name":"validate","outputs":[{"name":"","type":"bool"}],"type":"function"},{"constant":true,"inputs":[],"name":"_isActive","outputs":[{"name":"","type":"bool"}],"type":"function"},{"constant":true,"inputs":[],"name":"_isComplete","outputs":[{"name":"","type":"bool"}],"type":"function"},{"constant":true,"inputs":[],"name":"_marginPercent","outputs":[{"name":"","type":"uint256"}],"type":"function"},{"constant":false,"inputs":[],"name":"exercise","outputs":[{"name":"","type":"bool"}],"type":"function"},{"constant":true,"inputs":[],"name":"_broker","outputs":[{"name":"","type":"address"}],"type":"function"},{"constant":false,"inputs":[{"name":"buffer","type":"uint256"}],"name":"authorizeTradingAccounts","outputs":[{"name":"","type":"bool"}],"type":"function"},{"constant":false,"inputs":[],"name":"rebalanceMargin","outputs":[{"name":"","type":"bool"}],"type":"function"},{"constant":false,"inputs":[{"name":"seller","type":"address"},{"name":"buyer","type":"address"},{"name":"sellerLeg","type":"address"},{"name":"buyerLeg","type":"address"},{"name":"marginPercent","type":"uint256"}],"name":"initialize","outputs":[{"name":"","type":"bool"}],"type":"function"},{"inputs":[],"type":"constructor"}];
         var feedBackedCallBinary = "60606040525b33600060026101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908302179055506000600060006101000a81548160ff021916908302179055506000600060016101000a81548160ff021916908302179055505b6112e7806100716000396000f360606040523615610119576000357c010000000000000000000000000000000000000000000000000000000090048063060057541461011b5780630b4a26da1461015457806316c9b880146101775780631990da7a1461019a57806320965255146101bd5780632a7ce026146101e05780633ccfd60b146102195780634355f1ec1461023c5780636901f668146102755780638ec89e4f14610298578063913bb263146102bb578063a28c76cc146102de578063a550f86d14610340578063ae4e7fdf14610382578063b570571e146103a5578063d32cb0fe146103c8578063d617d00a146103eb578063dc76fabc14610424578063dd9bf99814610447578063ebf3125314610473578063fa1acb5c1461049657610119565b005b610128600480505061123e565b604051808273ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b6101616004805050610551565b6040518082815260200191505060405180910390f35b610184600480505061055a565b6040518082815260200191505060405180910390f35b6101a76004805050610563565b6040518082815260200191505060405180910390f35b6101ca600480505061121c565b6040518082815260200191505060405180910390f35b6101ed600480505061052b565b604051808273ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b6102266004805050610b52565b6040518082815260200191505060405180910390f35b6102496004805050610505565b604051808273ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b6102826004805050610977565b6040518082815260200191505060405180910390f35b6102a560048050506104b9565b6040518082815260200191505060405180910390f35b6102c860048050506104cc565b6040518082815260200191505060405180910390f35b61032a600480803590602001909190803590602001909190803590602001909190803590602001909190803590602001909190803590602001909190803590602001909190505061057e565b6040518082815260200191505060405180910390f35b610356600480803590602001909190505061125f565b604051808273ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b61038f60048050506110cc565b6040518082815260200191505060405180910390f35b6103b2600480505061056c565b6040518082815260200191505060405180910390f35b6103d56004805050610d17565b6040518082815260200191505060405180910390f35b6103f860048050506104df565b604051808273ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b6104316004805050611176565b6040518082815260200191505060405180910390f35b61045d6004808035906020019091905050610733565b6040518082815260200191505060405180910390f35b6104806004805050611106565b6040518082815260200191505060405180910390f35b6104a36004805050610575565b6040518082815260200191505060405180910390f35b600060009054906101000a900460ff1681565b600060019054906101000a900460ff1681565b600060029054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b600160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b600260009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b60056000505481565b60066000505481565b60076000505481565b60096000505481565b600a6000505481565b600086600160006101000a81548173ffffffffffffffffffffffffffffffffffffffff0219169083021790555087600260006101000a81548173ffffffffffffffffffffffffffffffffffffffff0219169083021790555086600360006101000a81548173ffffffffffffffffffffffffffffffffffffffff0219169083021790555087600460006101000a81548173ffffffffffffffffffffffffffffffffffffffff0219169083021790555061063d600360096000505402610733565b5060008673ffffffffffffffffffffffffffffffffffffffff1614156106b5576106867f65746865722d63616d702f70726963652d66656564000000000000000000000061125f565b600860006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908302179055506106e1565b85600860006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908302179055505b846005600050819055506106f3611176565b6064850402600660005081905550826007600050819055508160096000508190555042600a6000508190555060019050610728565b979650505050505050565b6000600160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff16141561084f57600360009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663c1dbd9b2308460096000505401604051837c0100000000000000000000000000000000000000000000000000000000028152600401808373ffffffffffffffffffffffffffffffffffffffff168152602001828152602001925050506020604051808303816000876161da5a03f11561000257505050604051805190602001505060019050610972565b600260009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff16141561096957600460009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663c1dbd9b2308460096000505401604051837c0100000000000000000000000000000000000000000000000000000000028152600401808373ffffffffffffffffffffffffffffffffffffffff168152602001828152602001925050506020604051808303816000876161da5a03f11561000257505050604051805190602001505060019050610972565b60009050610972565b919050565b6000600060009054906101000a900460ff16806109a05750600060019054906101000a900460ff165b156109ae5760019050610b4f565b6109bf600360096000505402610733565b50600360009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663fe9fbb8030604051827c0100000000000000000000000000000000000000000000000000000000028152600401808273ffffffffffffffffffffffffffffffffffffffff1681526020019150506020604051808303816000876161da5a03f11561000257505050604051805190602001501580610b1f5750600460009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663fe9fbb8030604051827c0100000000000000000000000000000000000000000000000000000000028152600401808273ffffffffffffffffffffffffffffffffffffffff1681526020019150506020604051808303816000876161da5a03f1156100025750505060405180519060200150155b15610b2d5760009050610b4f565b6001600060006101000a81548160ff0219169083021790555060019050610b4f565b90565b6000600060009054906101000a900460ff1615610b725760009050610d14565b600060029054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff1614158015610c1e5750600160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff1614155b8015610c785750600260009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff1614155b15610c865760009050610d14565b600060029054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1660003073ffffffffffffffffffffffffffffffffffffffff1631604051809050600060405180830381858888f19350505050506001600060016101000a81548160ff0219169083021790555060019050610d14565b90565b6000600160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff16141515610d7957600090506110c9565b610d816110cc565b1515610d9057600090506110c9565b600060029054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1660003073ffffffffffffffffffffffffffffffffffffffff1631604051809050600060405180830381858888f1935050505050600360009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16632e1a7d4d60076000505460066000505402604051827c0100000000000000000000000000000000000000000000000000000000028152600401808281526020019150506020604051808303816000876161da5a03f115610002575050506040518051906020015050600460009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663d0e30db03073ffffffffffffffffffffffffffffffffffffffff1631604051827c010000000000000000000000000000000000000000000000000000000002815260040180905060206040518083038185886185025a03f11561000257505050506040518051906020015050600460009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16632e1a7d4d600760005054610f90611176565b02604051827c0100000000000000000000000000000000000000000000000000000000028152600401808281526020019150506020604051808303816000876161da5a03f115610002575050506040518051906020015050600360009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663d0e30db03073ffffffffffffffffffffffffffffffffffffffff1631604051827c010000000000000000000000000000000000000000000000000000000002815260040180905060206040518083038185886185025a03f115610002575050505060405180519060200150506000600060006101000a81548160ff021916908302179055506001600060016101000a81548160ff02191690830217905550600190506110c9565b90565b60006000603c600a600050544203049050600960005054811015156110f8576001915061110256611101565b60009150611102565b5b5090565b60006000611112611176565b905060066000505481101561114d577fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff915061117256611171565b600660005054811115611167576001915061117256611170565b60009150611172565b5b5b5090565b6000600860009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff166331d98b3f600560005054604051827c0100000000000000000000000000000000000000000000000000000000028152600401808281526020019150506020604051808303816000876161da5a03f11561000257505050604051805190602001509050611219565b90565b6000600760005054600660005054611232611176565b0302905061123b565b90565b600073985509582b2c38010bfaa3c8d2be60022d3d00da905061125c565b90565b600061126961123e565b73ffffffffffffffffffffffffffffffffffffffff1663bb34534c83604051827c0100000000000000000000000000000000000000000000000000000000028152600401808281526020019150506020604051808303816000876161da5a03f115610002575050506040518051906020015090506112e2565b91905056";
-        var feedBackedCallABI = [{
-            "constant": false,
-            "inputs": [],
-            "name": "nameRegAddress",
-            "outputs": [{"name": "", "type": "address"}],
-            "type": "function"
-        }, {
-            "constant": true,
-            "inputs": [],
-            "name": "_feedName",
-            "outputs": [{"name": "", "type": "bytes32"}],
-            "type": "function"
-        }, {
-            "constant": true,
-            "inputs": [],
-            "name": "_strikePrice",
-            "outputs": [{"name": "", "type": "uint256"}],
-            "type": "function"
-        }, {
-            "constant": true,
-            "inputs": [],
-            "name": "_notional",
-            "outputs": [{"name": "", "type": "uint256"}],
-            "type": "function"
-        }, {
-            "constant": false,
-            "inputs": [],
-            "name": "getValue",
-            "outputs": [{"name": "", "type": "int256"}],
-            "type": "function"
-        }, {
-            "constant": true,
-            "inputs": [],
-            "name": "_seller",
-            "outputs": [{"name": "", "type": "address"}],
-            "type": "function"
-        }, {
-            "constant": false,
-            "inputs": [],
-            "name": "withdraw",
-            "outputs": [{"name": "", "type": "bool"}],
-            "type": "function"
-        }, {
-            "constant": true,
-            "inputs": [],
-            "name": "_buyer",
-            "outputs": [{"name": "", "type": "address"}],
-            "type": "function"
-        }, {
-            "constant": false,
-            "inputs": [],
-            "name": "validate",
-            "outputs": [{"name": "", "type": "bool"}],
-            "type": "function"
-        }, {
-            "constant": true,
-            "inputs": [],
-            "name": "_isActive",
-            "outputs": [{"name": "", "type": "bool"}],
-            "type": "function"
-        }, {
-            "constant": true,
-            "inputs": [],
-            "name": "_isComplete",
-            "outputs": [{"name": "", "type": "bool"}],
-            "type": "function"
-        }, {
-            "constant": false,
-            "inputs": [{"name": "seller", "type": "address"}, {
-                "name": "buyer",
-                "type": "address"
-            }, {"name": "feedProvider", "type": "address"}, {
-                "name": "feedName",
-                "type": "bytes32"
-            }, {"name": "strikeToMarketRatio", "type": "uint256"}, {
-                "name": "notional",
-                "type": "uint256"
-            }, {"name": "timeToMaturity", "type": "uint256"}],
-            "name": "initialize",
-            "outputs": [{"name": "", "type": "bool"}],
-            "type": "function"
-        }, {
-            "constant": false,
-            "inputs": [{"name": "name", "type": "bytes32"}],
-            "name": "named",
-            "outputs": [{"name": "", "type": "address"}],
-            "type": "function"
-        }, {
-            "constant": false,
-            "inputs": [],
-            "name": "isMature",
-            "outputs": [{"name": "", "type": "bool"}],
-            "type": "function"
-        }, {
-            "constant": true,
-            "inputs": [],
-            "name": "_timeToMaturity",
-            "outputs": [{"name": "", "type": "uint256"}],
-            "type": "function"
-        }, {
-            "constant": false,
-            "inputs": [],
-            "name": "exercise",
-            "outputs": [{"name": "", "type": "bool"}],
-            "type": "function"
-        }, {
-            "constant": true,
-            "inputs": [],
-            "name": "_broker",
-            "outputs": [{"name": "", "type": "address"}],
-            "type": "function"
-        }, {
-            "constant": false,
-            "inputs": [],
-            "name": "getSpotPrice",
-            "outputs": [{"name": "", "type": "uint256"}],
-            "type": "function"
-        }, {
-            "constant": false,
-            "inputs": [{"name": "buffer", "type": "uint256"}],
-            "name": "authorizeTradingAccounts",
-            "outputs": [{"name": "", "type": "bool"}],
-            "type": "function"
-        }, {
-            "constant": false,
-            "inputs": [],
-            "name": "getMoneyness",
-            "outputs": [{"name": "", "type": "int256"}],
-            "type": "function"
-        }, {
-            "constant": true,
-            "inputs": [],
-            "name": "_startTime",
-            "outputs": [{"name": "", "type": "uint256"}],
-            "type": "function"
-        }, {"inputs": [], "type": "constructor"}];
+        var feedBackedCallABI = [{"constant":false,"inputs":[],"name":"nameRegAddress","outputs":[{"name":"","type":"address"}],"type":"function"},{"constant":true,"inputs":[],"name":"_feedName","outputs":[{"name":"","type":"bytes32"}],"type":"function"},{"constant":true,"inputs":[],"name":"_strikePrice","outputs":[{"name":"","type":"uint256"}],"type":"function"},{"constant":true,"inputs":[],"name":"_notional","outputs":[{"name":"","type":"uint256"}],"type":"function"},{"constant":false,"inputs":[],"name":"getValue","outputs":[{"name":"","type":"int256"}],"type":"function"},{"constant":true,"inputs":[],"name":"_seller","outputs":[{"name":"","type":"address"}],"type":"function"},{"constant":false,"inputs":[],"name":"withdraw","outputs":[{"name":"","type":"bool"}],"type":"function"},{"constant":true,"inputs":[],"name":"_buyer","outputs":[{"name":"","type":"address"}],"type":"function"},{"constant":false,"inputs":[],"name":"validate","outputs":[{"name":"","type":"bool"}],"type":"function"},{"constant":true,"inputs":[],"name":"_isActive","outputs":[{"name":"","type":"bool"}],"type":"function"},{"constant":true,"inputs":[],"name":"_isComplete","outputs":[{"name":"","type":"bool"}],"type":"function"},{"constant":false,"inputs":[{"name":"seller","type":"address"},{"name":"buyer","type":"address"},{"name":"feedProvider","type":"address"},{"name":"feedName","type":"bytes32"},{"name":"strikeToMarketRatio","type":"uint256"},{"name":"notional","type":"uint256"},{"name":"timeToMaturity","type":"uint256"}],"name":"initialize","outputs":[{"name":"","type":"bool"}],"type":"function"},{"constant":false,"inputs":[{"name":"name","type":"bytes32"}],"name":"named","outputs":[{"name":"","type":"address"}],"type":"function"},{"constant":false,"inputs":[],"name":"isMature","outputs":[{"name":"","type":"bool"}],"type":"function"},{"constant":true,"inputs":[],"name":"_timeToMaturity","outputs":[{"name":"","type":"uint256"}],"type":"function"},{"constant":false,"inputs":[],"name":"exercise","outputs":[{"name":"","type":"bool"}],"type":"function"},{"constant":true,"inputs":[],"name":"_broker","outputs":[{"name":"","type":"address"}],"type":"function"},{"constant":false,"inputs":[],"name":"getSpotPrice","outputs":[{"name":"","type":"uint256"}],"type":"function"},{"constant":false,"inputs":[{"name":"buffer","type":"uint256"}],"name":"authorizeTradingAccounts","outputs":[{"name":"","type":"bool"}],"type":"function"},{"constant":false,"inputs":[],"name":"getMoneyness","outputs":[{"name":"","type":"int256"}],"type":"function"},{"constant":true,"inputs":[],"name":"_startTime","outputs":[{"name":"","type":"uint256"}],"type":"function"},{"inputs":[],"type":"constructor"}]
+                ;
 
         var web3 = require('web3');
         web3.setProvider(new web3.providers.HttpProvider('http://localhost:56000'));
@@ -358,7 +217,7 @@
 <body>
 <h1>Call Spread</h1>
 
-<div style="background-color: azure " id="result"></div>
+<div style="background-color: azure; max-height: 10em; line-height: 1em;overflow: auto;float: right; width: 40%" id="result"></div>
 
 <h2>Manage</h2>
 
@@ -368,15 +227,15 @@
             <div style="font-size: x-small">
                 <p>Call spread</p>
 
-                <p id="call_spread_address">0x00000000000000000000000000000000000000</p>
+                <p id="call_spread_address">0xbf3bda46108a8b233a8ba077d4d85bcaf1b34287</p>
 
                 <p>Buy leg</p>
 
-                <p id="buy_leg_address">0x00000000000000000000000000000000000000</p>
+                <p id="buy_leg_address">0x534d29b5537554be86ee639e57711cf42e4fbe43</p>
 
                 <p>Sell leg</p>
 
-                <p id="sell_leg_address">0x00000000000000000000000000000000000000</p>
+                <p id="sell_leg_address">0x5ee7336b3264f03144f9f8139372ad7753c1dc73</p>
             </div>
         </td>
         <td>
@@ -441,11 +300,11 @@
 <table>
     <tr>
         <td>Buyer</td>
-        <td><input type="text" id="buyers_account_address" size="40"/></td>
+        <td><input type="text" id="buyers_account_address" size="40" value="0xcfe479123aa3555a24260d2fc8691dcf3bdb18d9" /></td>
     </tr>
     <tr>
         <td>Seller</td>
-        <td><input type="text" id="sellers_account_address" size="40"/></td>
+        <td><input type="text" id="sellers_account_address" size="40" value="0xe2553a57c54e4a98cfad1e698948f1ab68379580" /></td>
     </tr>
 </table>
 
@@ -459,30 +318,30 @@
     <tr>
         <td>Underlier</td>
         <td>
-            <select id="buy_undrlier">
+            <select id="buy_underlier">
                 <option>USD_ETH</option>
             </select>
         </td>
         <td>
-            <select id="buy_undrlier">
+            <select id="sell_underlier">
                 <option>USD_ETH</option>
             </select>
         </td>
     </tr>
     <tr>
         <td>Strike</td>
-        <td><input type="text" id="buy_strike" size="6"/></td>
-        <td><input type="text" id="buy_strike" size="6"/></td>
+        <td><input type="text" id="buy_strike" size="6" value="1" /></td>
+        <td><input type="text" id="sell_strike" size="6" value="1" /></td>
     </tr>
     <tr>
         <td>Maturity</td>
-        <td><input type="text" id="buy_strike" size="6"/></td>
-        <td><input type="text" id="buy_strike" size="6"/></td>
+        <td><input type="text" id="buy_maturity" size="6" value="10" /></td>
+        <td><input type="text" id="sell_maturity" size="6" value="10" /></td>
     </tr>
     <tr>
         <td>Notional</td>
-        <td><input type="text" id="buy_strike" size="6"/></td>
-        <td><input type="text" id="buy_strike" size="6"/></td>
+        <td><input type="text" id="buy_notional" size="6" value="100" /></td>
+        <td><input type="text" id="sell_notional" size="6" value="100" /></td>
     </tr>
 </table>
 
