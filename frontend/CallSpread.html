@@ -104,7 +104,7 @@
                         1,
                         notional,
                         maturity,
-                        {from: web3.eth.defaultAccount, value: 0, gas: 2000000},
+                        {from: web3.eth.coinbase, value: 0, gas: 2000000},
                         function (err, result) {
                             if (err != null)
                                 reject(err);
@@ -133,7 +133,7 @@
                         1,
                         notional * -1,
                         maturity,
-                        {from: web3.eth.defaultAccount, value: 0, gas: 2000000},
+                        {from: web3.eth.coinbase, value: 0, gas: 2000000},
                         function (err, result) {
                             if (err != null)
                                 reject(err);
@@ -150,15 +150,15 @@
                 logToScreen("Initializing call spread..");
                 var buyer = document.getElementById("buyers_account_address").value;
                 var seller = document.getElementById("sellers_account_address").value;
-                var buyLegAddress = document.getElementById("buy_leg_address").value;
-                var sellLegAddress = document.getElementById("sell_leg_address").value;
+                var buyLegAddress = document.getElementById("buy_leg_address").textContent;
+                var sellLegAddress = document.getElementById("sell_leg_address").textContent;
                 callSpread.initialize.sendTransaction(
                         seller,
                         buyer,
                         sellLegAddress,
                         buyLegAddress,
                         120,
-                        {from: web3.eth.defaultAccount, value: 0, gas: 2000000},
+                        {from: web3.eth.coinbase, value: 0, gas: 2000000},
                         function (err, result) {
                             if (err != null)
                                 reject(err);

@@ -56,7 +56,7 @@
             logToScreen("Funding trading account with 1 ETH..");
             var address = document.getElementById('address').value;
             var amount = web3.toWei(1, 'ether');
-            web3.eth.sendTransaction({"from": web3.eth.defaultAccount, "to": address, "value": amount},
+            web3.eth.sendTransaction({"from": web3.eth.coinbase, "to": address, "value": amount},
                     function(err, result) {
                         console.log(err, result);
                         logToScreen("Funded trading account with 1 ETH. The new balance will be reflected soon.");
