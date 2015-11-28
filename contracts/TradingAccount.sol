@@ -7,6 +7,7 @@ contract TradingAccount {
 
     address                         public _owner;
     mapping(address => AuthPeriod)  public _authorized;
+    address[]                       public _addresses;
 
     function TradingAccount() {
         // Track the owner
@@ -53,6 +54,7 @@ contract TradingAccount {
         if (period.duration == 0 || timeRemaining(period) < duration) {
             // Add this account to the list of authorized accounts
             _authorized[accountAddr] = AuthPeriod(duration, block.timestamp);
+            _addresses.push(accountAddr);
             // TODO: retain AuthPeriod history in linked list for revocation
             return true;
         }
