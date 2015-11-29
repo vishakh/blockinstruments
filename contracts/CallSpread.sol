@@ -9,15 +9,15 @@ contract CallSpread {
     bool public         _isComplete;
 
     // Participating addresses and accounts
-    address public      _broker;
-    address public      _buyer;
-    address public      _seller;
-    TradingAccount      _buyerAcct;
-    TradingAccount      _sellerAcct;
+    address public              _broker;
+    address public              _buyer;
+    address public              _seller;
+    TradingAccount public       _buyerAcct;
+    TradingAccount public       _sellerAcct;
 
     // Contract legs, i.e., call options
-    FeedBackedCall      _buyerLeg;
-    FeedBackedCall      _sellerLeg;
+    FeedBackedCall public       _buyerLeg;
+    FeedBackedCall public       _sellerLeg;
 
     // Other information
     uint public         _marginPercent;
