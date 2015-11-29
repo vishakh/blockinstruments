@@ -62,12 +62,12 @@ contract CallSpread {
     // Authorize trading accounts for margin calls
     function authorizeTradingAccounts(uint buffer) returns (bool) {
 
-        if (msg.sender == _buyer) {
-            _buyerAcct.authorize(this, _maxTimeToMaturity + buffer);
+        if ((msg.sender == _buyer) &&
+                _buyerAcct.authorize(this, _maxTimeToMaturity + buffer)) {
             return true;
         }
-        if (msg.sender  == _seller) {
-            _sellerAcct.authorize(this, _maxTimeToMaturity + buffer);
+        if ((msg.sender  == _seller) &&
+                _sellerAcct.authorize(this, _maxTimeToMaturity + buffer)) {
             return true;
         }
         return false;
