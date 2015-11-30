@@ -38,7 +38,7 @@ contract FeedBackedCall is nameRegAware {
         address buyer,
         address feedProvider,
         bytes32 feedName,
-        uint    strikeToMarketRatio,
+        uint    strikeToMarketRatioPct,
         uint    notional,
         uint    timeToMaturity) returns (bool) {
 
@@ -59,8 +59,8 @@ contract FeedBackedCall is nameRegAware {
         }
         _feedName = feedName;
 
-        // Strike price relative to market price
-        _strikePrice = (strikeToMarketRatio / 100) * getSpotPrice();
+        // Strike price defined relative to market price
+        _strikePrice =  getSpotPrice() * strikeToMarketRatioPct / 100;
         _notional = notional;
 
         // Maturity relative to current timestamp and denominated in minutes
