@@ -5,23 +5,23 @@ import "TradingAccount.sol";
 contract CallSpread {
 
     // Contract status
-    bool public         _isActive;
-    bool public         _isComplete;
+    bool public             _isActive;
+    bool public             _isComplete;
 
     // Participating addresses and accounts
-    address public              _broker;
-    address public              _buyer;
-    address public              _seller;
-    TradingAccount public       _buyerAcct;
-    TradingAccount public       _sellerAcct;
+    address public          _broker;
+    address public          _buyer;
+    address public          _seller;
+    TradingAccount          _buyerAcct;
+    TradingAccount          _sellerAcct;
 
     // Contract legs, i.e., call options
-    FeedBackedCall public       _buyerLeg;
-    FeedBackedCall public       _sellerLeg;
+    FeedBackedCall public   _buyerLeg;
+    FeedBackedCall public   _sellerLeg;
 
     // Other information
-    uint public         _marginPercent;
-    uint public         _maxTimeToMaturity;
+    uint public             _marginPct;
+    uint public             _maxTimeToMaturity;
 
     function CallSpread() {
         _broker = msg.sender;
@@ -34,14 +34,14 @@ contract CallSpread {
         address buyer,
         address sellerLeg,
         address buyerLeg,
-        uint    marginPercent) returns (bool) {
+        uint    marginPct) returns (bool) {
 
         // TODO: spawn legs directly from this contract
         _buyerLeg = FeedBackedCall(buyerLeg);
         _sellerLeg = FeedBackedCall(sellerLeg);
 
         // Percentage difference in value of the legs to be held in escrow
-        _marginPercent = marginPercent;
+        _marginPct = marginPct;
 
         // Record the maximum maturity of the legs
         _maxTimeToMaturity = _buyerLeg._timeToMaturity();
@@ -141,7 +141,7 @@ contract CallSpread {
         int sellerValue = _sellerLeg.getValue();
 
         uint difference = uint(buyerValue - sellerValue);
-        uint marginAmount = difference * _marginPercent / 100;
+        uint marginAmount = difference * _marginPct / 100;
 
         if (marginAmount > this.balance) {
             _sellerAcct.withdraw(marginAmount - this.balance);
