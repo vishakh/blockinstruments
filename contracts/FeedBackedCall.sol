@@ -72,11 +72,11 @@ contract FeedBackedCall is nameRegAware {
 
     // Authorize trading accounts for settlement
     function authorizeTradingAccounts(uint buffer) returns (bool) {
-        if (msg.sender == _buyer) {
+        if (msg.sender == _buyer || msg.sender == _broker) {
             _buyerAcct.authorize(this, _timeToMaturity + buffer);
             return true;
         }
-        if (msg.sender  == _seller) {
+        if (msg.sender  == _seller || msg.sender == _broker) {
             _sellerAcct.authorize(this, _timeToMaturity + buffer);
             return true;
         }
@@ -120,7 +120,7 @@ contract FeedBackedCall is nameRegAware {
 
     // On maturity, allow the buyer to exercise the option
     function exercise() returns (bool) {
-        if (msg.sender != _buyer) {
+        if (msg.sender != _buyer && msg.sender != _broker) {
             return false;
         }
         if (!isMature()) {

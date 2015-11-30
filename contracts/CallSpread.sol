@@ -62,11 +62,11 @@ contract CallSpread {
     // Authorize trading accounts for margin calls
     function authorizeTradingAccounts(uint buffer) returns (bool) {
 
-        if ((msg.sender == _buyer) &&
+        if ((msg.sender == _buyer || msg.sender == _broker) &&
                 _buyerAcct.authorize(this, _maxTimeToMaturity + buffer)) {
             return true;
         }
-        if ((msg.sender  == _seller) &&
+        if ((msg.sender  == _seller || msg.sender == _broker) &&
                 _sellerAcct.authorize(this, _maxTimeToMaturity + buffer)) {
             return true;
         }
@@ -120,10 +120,10 @@ contract CallSpread {
     // Allow the buyer and seller to exercise their respective options
     function exercise() returns (bool) {
         bool ret;
-        if (msg.sender == _seller) {
+        if (msg.sender == _seller || msg.sender == _broker) {
             ret = _sellerLeg.exercise();
         }
-        if (msg.sender == _buyer) {
+        if (msg.sender == _buyer || msg.sender == _broker) {
             returnMargin();
             ret = _buyerLeg.exercise();
         }
