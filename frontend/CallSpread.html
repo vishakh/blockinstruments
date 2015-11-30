@@ -27,14 +27,15 @@
             document.getElementById("margin").innerHTML = callSpread._marginPercent();
             document.getElementById("maturity").innerHTML = callSpread._maxTimeToMaturity();
 
-            //document.getElementById("buy_leg_underlier").innerHTML = buyOption._feedName();
+            document.getElementById("buy_leg_underlier").innerHTML = web3.toUtf8(buyOption._feedName());
             document.getElementById("buy_leg_strike").innerHTML = buyOption._strikePrice();
+            console.log(web3.toBigNumber(buyOption._strikePrice()));
             document.getElementById("buy_leg_maturity").innerHTML = new Date((buyOption._startTime() + buyOption._timeToMaturity())*10).toLocaleString();
             document.getElementById("buy_leg_notional").innerHTML = buyOption._notional();
             document.getElementById("buy_leg_active").innerHTML = buyOption._isActive();
             document.getElementById("buy_leg_mature").innerHTML = buyOption._isComplete();
 
-            //document.getElementById("sell_leg_underlier").innerHTML = sellOption._feedName();
+            document.getElementById("sell_leg_underlier").innerHTML = web3.toUtf8(sellOption._feedName());
             document.getElementById("sell_leg_strike").innerHTML = sellOption._strikePrice();
             document.getElementById("sell_leg_maturity").innerHTML = new Date((sellOption._startTime() + sellOption._timeToMaturity())*10).toLocaleString();
             document.getElementById("sell_leg_notional").innerHTML = sellOption._notional();
