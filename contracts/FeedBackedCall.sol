@@ -72,12 +72,12 @@ contract FeedBackedCall is nameRegAware {
 
     // Authorize trading accounts for settlement
     function authorizeTradingAccounts(uint buffer) returns (bool) {
-        if (msg.sender == _buyer || msg.sender == _broker) {
-            _buyerAcct.authorize(this, _timeToMaturity + buffer);
+        if ((msg.sender == _buyer || msg.sender == _broker) &&
+                _buyerAcct.authorize(this, _timeToMaturity + buffer)) {
             return true;
         }
-        if (msg.sender  == _seller || msg.sender == _broker) {
-            _sellerAcct.authorize(this, _timeToMaturity + buffer);
+        if ((msg.sender  == _seller || msg.sender == _broker) &&
+                _sellerAcct.authorize(this, _timeToMaturity + buffer)) {
             return true;
         }
         return false;

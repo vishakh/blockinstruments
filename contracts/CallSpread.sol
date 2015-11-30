@@ -61,7 +61,6 @@ contract CallSpread {
 
     // Authorize trading accounts for margin calls
     function authorizeTradingAccounts(uint buffer) returns (bool) {
-
         if ((msg.sender == _buyer || msg.sender == _broker) &&
                 _buyerAcct.authorize(this, _maxTimeToMaturity + buffer)) {
             return true;
