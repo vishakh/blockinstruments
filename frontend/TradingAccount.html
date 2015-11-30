@@ -18,7 +18,7 @@
             var balanceInWei = web3.eth.getBalance(address).toNumber();
             var balanceInEth = web3.fromWei(balanceInWei, 'ether');
             document.getElementById('balance').textContent = balanceInEth + " ETH";
-            var authorized = "<tr><td>Address</td><td>Start Time</td><td>Duration</td></tr>";
+            var authorized = "<tr><td>Address</td><td>Start Time</td><td>Duration</td><td>Maturity</td></tr>";
             for(var i=0;; i++)
             {
                 var result = tradingAccount._addresses(i);
@@ -30,7 +30,8 @@
                 console.log(deets);
                 console.log(duration);
                 console.log(startTime);
-                authorized += "<tr><td>" + result + "</td><td>" + startTime + "</td><td>" + duration + "</td></tr>";
+                var localTime = new Date((duration + startTime)*10).toLocaleString();
+                authorized += "<tr><td>" + result + "</td><td>" + startTime + "</td><td>" + duration + "</td><td>" + localTime + "</td></tr>";
             }
             document.getElementById('authorized').innerHTML = authorized;
         }
@@ -82,7 +83,7 @@
             var authorizee = document.getElementById('authorizee').value;
             var result = tradingAccount.authorize.sendTransaction(
                     authorizee,
-                    100,
+                    1000000000000,
                     {from: web3.eth.coinbase, value: 0, gas: 2000000},
                     function(err, result){
                         console.log(err, result);
