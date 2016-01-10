@@ -1,4 +1,7 @@
-contract RandomizedPriceFeedApi {
+import "PriceFeedApi.sol";
+
+
+contract RandomizedPriceFeedApi is PriceFeedApi {
 
     // block time when the prices were last updated
     uint public updateTime;
@@ -6,7 +9,7 @@ contract RandomizedPriceFeedApi {
     mapping(bytes32 => uint)    _prices;
     mapping(bytes32 => uint)    _timestamps;
 
-    function RandomizedPriceFeedApi(){
+    function RandomizedPriceFeedApi() {
         _prices['USD_ETH']  = 673478;
         _prices['BTC_ETH']  = 2189;
         _prices['USDT_BTC'] = 285000000;
@@ -46,8 +49,7 @@ contract RandomizedPriceFeedApi {
 
     // returns the price of an asset
     // the price is represented as uint: (double price) * 1000000
-    function getPrice(bytes32 symbol) returns(uint currPrice)
-    {
+    function getPrice(bytes32 symbol) returns(uint currPrice) {
         uint price = _prices[symbol];
 
         uint shift = price / 10;
@@ -64,7 +66,7 @@ contract RandomizedPriceFeedApi {
     // returns the timestamp of the latest price for an asset
     // normally this is the exchange timestamp, but if exchange
     // doesn't supply such info the latest data retrieval time is returned
-    function getTimestamp(bytes32 symbol) returns(uint timestamp){
+    function getTimestamp(bytes32 symbol) returns(uint timestamp) {
         return _timestamps[symbol];
     }
 }
