@@ -18,7 +18,7 @@ contract TradingAccount {
     // to this contract. We include additional authentication for
     // symmetry with withdraw().
     function deposit() returns (bool) {
-        if (_owner == msg.sender || isAuthorized(msg.sender)) {
+        if (msg.sender == _owner || isAuthorized(msg.sender)) {
             // Accept the deposit
             return true;
         } else {

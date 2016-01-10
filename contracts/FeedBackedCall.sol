@@ -34,8 +34,8 @@ contract FeedBackedCall is nameRegAware {
 
     // Initialize with participants and terms
     function initialize(
-        address seller,
-        address buyer,
+        address sellerAcct,
+        address buyerAcct,
         address feedProvider,
         bytes32 feedName,
         uint    strikeToMarketRatioPct,
@@ -43,10 +43,10 @@ contract FeedBackedCall is nameRegAware {
         uint    timeToMaturity) returns (bool) {
 
         // Trading accounts
-        _buyer = buyer;
-        _seller = seller;
-        _buyerAcct = TradingAccount(buyer);
-        _sellerAcct = TradingAccount(seller);
+        _buyerAcct = TradingAccount(buyerAcct);
+        _buyer = _buyerAcct._owner();
+        _sellerAcct = TradingAccount(sellerAcct);
+        _seller = _sellerAcct._owner();
 
         // Authorize trading account of msg.sender
         authorizeTradingAccounts(_timeToMaturity * 3);
@@ -72,15 +72,18 @@ contract FeedBackedCall is nameRegAware {
 
     // Authorize trading accounts for settlement
     function authorizeTradingAccounts(uint buffer) returns (bool) {
-        if ((msg.sender == _buyer || msg.sender == _broker) &&
-                _buyerAcct.authorize(this, _timeToMaturity + buffer)) {
-            return true;
+        bool buyerAuthed = true;
+        bool sellerAuthed = true;
+
+        if (msg.sender == _buyer) {
+            buyerAuthed = _buyerAcct.authorize(this,
+                                               _timeToMaturity + buffer);
         }
-        if ((msg.sender  == _seller || msg.sender == _broker) &&
-                _sellerAcct.authorize(this, _timeToMaturity + buffer)) {
-            return true;
+        if (msg.sender  == _seller) {
+            sellerAuthed = _sellerAcct.authorize(this,
+                                                 _timeToMaturity + buffer);
         }
-        return false;
+        return (buyerAuthed && sellerAuthed);
     }
 
     // Validate the contract in order to activate it
@@ -120,14 +123,14 @@ contract FeedBackedCall is nameRegAware {
 
     // On maturity, allow the buyer to exercise the option
     function exercise() returns (bool) {
-        if (msg.sender != _buyer && msg.sender != _broker) {
+        if (msg.sender != _buyer) {
             return false;
         }
         if (!isMature()) {
             return false;
         }
 
-        // The broker mops up any unclaimed balance
+        // The broker first mops up any unclaimed balance
         _broker.send(this.balance);
 
         // Buyer claims the underlier at the strike price
