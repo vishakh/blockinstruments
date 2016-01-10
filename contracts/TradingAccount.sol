@@ -56,9 +56,8 @@ contract TradingAccount {
             _authorized[accountAddr] = AuthPeriod(duration, block.timestamp);
             _addresses.push(accountAddr);
             // TODO: retain AuthPeriod history in linked list for revocation
-            return true;
         }
-        return false;
+        return true;
     }
 
     function isAuthorized(address accountAddr) returns (bool) {
