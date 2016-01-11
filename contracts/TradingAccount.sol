@@ -51,12 +51,15 @@ contract TradingAccount {
             return false;
         }
         AuthPeriod period = _authorized[accountAddr];
-        if (period.duration == 0 || timeRemaining(period) < duration) {
+        if (period.duration == 0) {
             // Add this account to the list of authorized accounts
             _authorized[accountAddr] = AuthPeriod(duration, block.timestamp);
             _addresses.push(accountAddr);
-            // TODO: retain AuthPeriod history in linked list for revocation
+        } else if (timeRemaining(period) < duration) {
+            // Extend the authorized duration for this account
+            _authorized[accountAddr] = AuthPeriod(duration, block.timestamp);
         }
+        // TODO: retain AuthPeriod history in linked list for revocation
         return true;
     }
 
