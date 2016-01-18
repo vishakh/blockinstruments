@@ -30,8 +30,8 @@ contract CallSpread {
     }
 
     function initialize(
-        address seller,
-        address buyer,
+        address sellerAcct,
+        address buyerAcct,
         address sellerLeg,
         address buyerLeg,
         uint    marginPct) returns (bool) {
@@ -50,10 +50,10 @@ contract CallSpread {
         }
 
         // Trading accounts
-        _buyer = buyer;
-        _seller = seller;
-        _buyerAcct = TradingAccount(buyer);
-        _sellerAcct = TradingAccount(seller);
+        _buyerAcct = TradingAccount(buyerAcct);
+        _buyer = _buyerAcct._owner();
+        _sellerAcct = TradingAccount(sellerAcct);
+        _seller = _sellerAcct._owner();
 
         // Authorize trading account of msg.sender
         authorizeTradingAccounts(_maxTimeToMaturity * 3);
@@ -61,15 +61,18 @@ contract CallSpread {
 
     // Authorize trading accounts for margin calls
     function authorizeTradingAccounts(uint buffer) returns (bool) {
-        if ((msg.sender == _buyer || msg.sender == _broker) &&
-                _buyerAcct.authorize(this, _maxTimeToMaturity + buffer)) {
-            return true;
+        bool buyerAuthed = true;
+        bool sellerAuthed = true;
+
+        if (msg.sender == _buyer) {
+            buyerAuthed = _buyerAcct.authorize(this,
+                                               _maxTimeToMaturity + buffer);
         }
-        if ((msg.sender  == _seller || msg.sender == _broker) &&
-                _sellerAcct.authorize(this, _maxTimeToMaturity + buffer)) {
-            return true;
+        if (msg.sender  == _seller) {
+            sellerAuthed = _sellerAcct.authorize(this,
+                                                 _maxTimeToMaturity + buffer);
         }
-        return false;
+        return (buyerAuthed && sellerAuthed);
     }
 
     // The receiver validates the contract with the same parameters
@@ -118,20 +121,22 @@ contract CallSpread {
 
     // Allow the buyer and seller to exercise their respective options
     function exercise() returns (bool) {
-        bool ret;
-        if (msg.sender == _seller || msg.sender == _broker) {
-            ret = _sellerLeg.exercise();
-        }
-        if (msg.sender == _buyer || msg.sender == _broker) {
+        bool buyerExercised = true;
+        bool sellerExercised = true;
+
+        if (msg.sender == _buyer) {
             returnMargin();
-            ret = _buyerLeg.exercise();
+            buyerExercised = _buyerLeg.exercise();
+        }
+        if (msg.sender == _seller) {
+            sellerExercised = _sellerLeg.exercise();
         }
 
         if (_sellerLeg._isComplete() && _buyerLeg._isComplete()) {
             _isActive = false;
             _isComplete = true;
         }
-        return ret;
+        return (buyerExercised && sellerExercised);
     }
 
     // Rebalance the margin based on the current value of the underliers
