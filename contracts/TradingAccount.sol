@@ -1,4 +1,6 @@
-contract TradingAccount {
+import "Loggable.sol";
+
+contract TradingAccount is Loggable {
 
     struct AuthPeriod {
         uint        duration;       // currently in minutes
@@ -12,6 +14,7 @@ contract TradingAccount {
     function TradingAccount() {
         // Track the owner
         _owner = msg.sender;
+        GenericLogEvent("Something happened.");
     }
 
     // This is pretty unnecessary because ether can be directly sent

@@ -1,6 +1,6 @@
 {
   "name": "crypto-js",
-  "version": "3.1.5",
+  "version": "3.1.6",
   "description": "JavaScript library of crypto standards.",
   "license": "MIT",
   "homepage": "http://github.com/brix/crypto-js",
@@ -32,11 +32,11 @@
   "main": "index.js",
   "dependencies": {},
   "ignore": [],
-  "_release": "3.1.5",
+  "_release": "3.1.6",
   "_resolution": {
     "type": "version",
-    "tag": "3.1.5",
-    "commit": "9710bde9c73548cac712506e4b9f6125a4cf3f2c"
+    "tag": "3.1.6",
+    "commit": "f92d7ed1c322b305d04c4b6fcd8970644da89111"
   },
   "_source": "git://github.com/brix/crypto-js.git",
   "_target": "~3.1.4",

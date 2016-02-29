@@ -1,4 +1,8 @@
-contract loggable {
+contract Loggable {
+
+    event GenericLogEvent (
+        bytes32 message
+    );
 
     event Authorization(bytes32 addr, bytes32 success);
     event Validation(bytes32 addr, bytes32 success);

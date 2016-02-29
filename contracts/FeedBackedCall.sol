@@ -1,5 +1,5 @@
 import "std.sol";
-import "loggable.sol";
+import "oggable.sol";
 import "PriceFeedApi.sol";
 import "TradingAccount.sol";
 

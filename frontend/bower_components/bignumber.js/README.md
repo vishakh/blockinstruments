@@ -244,6 +244,22 @@ See [LICENCE](https://github.com/MikeMcl/bignumber.js/blob/master/LICENCE).
 
 ## Change Log
 
+####2.1.4
+* 15/12/2015
+* Correct UMD.
+
+####2.1.3
+* 13/12/2015
+* Refactor re global object and crypto availability when bundling.
+
+####2.1.2
+* 10/12/2015
+* Bugfix: `window.crypto` not assigned to `crypto`.
+
+####2.1.1
+* 09/12/2015
+* Prevent code bundler from adding `crypto` shim.
+
 ####2.1.0
 * 26/10/2015
 * For `valueOf` and `toJSON`, include the minus sign with negative zero.

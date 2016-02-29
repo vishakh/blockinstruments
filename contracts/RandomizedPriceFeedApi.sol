@@ -1,5 +1,5 @@
 import "PriceFeedApi.sol";
-
+import "Loggable.sol";
 
 contract RandomizedPriceFeedApi is PriceFeedApi {
 

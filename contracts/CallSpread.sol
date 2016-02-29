@@ -1,9 +1,9 @@
-import "loggable.sol";
+import "Loggable.sol";
 import "FeedBackedCall.sol";
 import "TradingAccount.sol";
 
 
-contract CallSpread is loggable {
+contract CallSpread is Loggable {
 
     // Contract status
     bool public             _isActive;
