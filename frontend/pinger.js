@@ -13,7 +13,7 @@ self.addEventListener('message', function(e)
     {
         case 'start':
             self.postMessage('Pinging ' + data.num_pings + " times every " + data.ping_interval + "ms.");
-            for(i=1; i<=data.num_pings; i++)
+            for(i=0; i<data.num_pings; i++)
             {
                 sleep(data.ping_interval);
                 d = new Date();
