@@ -1,8 +1,9 @@
+import "loggable.sol";
 import "FeedBackedCall.sol";
 import "TradingAccount.sol";
 
 
-contract CallSpread {
+contract CallSpread is loggable {
 
     // Contract status
     bool public             _isActive;
@@ -67,10 +68,14 @@ contract CallSpread {
         if (msg.sender == _buyer) {
             buyerAuthed = _buyerAcct.authorize(this,
                                                _maxTimeToMaturity + buffer);
+            Authorization(bytes32(address(_buyerAcct)),
+                          toText(buyerAuthed));
         }
         if (msg.sender  == _seller) {
             sellerAuthed = _sellerAcct.authorize(this,
                                                  _maxTimeToMaturity + buffer);
+            Authorization(bytes32(address(_sellerAcct)),
+                          toText(sellerAuthed));
         }
         return (buyerAuthed && sellerAuthed);
     }
@@ -91,11 +96,27 @@ contract CallSpread {
         }
 
         // Validate the legs
-        if (!_buyerLeg.validate() || !_sellerLeg.validate()) {
+//        if (!_buyerLeg.validate() || !_sellerLeg.validate()) {
+//            return false;
+//        }
+
+        bool buyerValidated = _buyerLeg.validate();
+        Validation(bytes32(address(_buyerLeg)),
+                   toText(buyerValidated));
+        if (!buyerValidated) {
+            return false;
+        }
+
+        bool sellerValidated = _sellerLeg.validate();
+        Validation(bytes32(address(_sellerLeg)),
+                   toText(sellerValidated));
+        if (!sellerValidated) {
             return false;
         }
 
         _isActive = true;
+        Validation(bytes32(address(this)),
+                   toText(true));
         return true;
     }
 
@@ -110,12 +131,19 @@ contract CallSpread {
             return false;
         }
         // Withdraw from both legs
-        _buyerLeg.withdraw();
-        _sellerLeg.withdraw();
+        bool buyerWithdrawn = _buyerLeg.withdraw();
+        Withdrawal(bytes32(address(_buyerLeg)),
+                   toText(buyerWithdrawn));
+
+        bool sellerWithdrawn = _sellerLeg.withdraw();
+        Withdrawal(bytes32(address(_sellerLeg)),
+                   toText(sellerWithdrawn));
 
         // suicide(_broker);
         _broker.send(this.balance);
         _isComplete = true;
+        Withdrawal(bytes32(address(this)),
+                   toText(true));
         return true;
     }
 
@@ -127,14 +155,20 @@ contract CallSpread {
         if (msg.sender == _buyer) {
             returnMargin();
             buyerExercised = _buyerLeg.exercise();
+            Exercise(bytes32(address(_buyerLeg)),
+                     toText(buyerExercised));
         }
         if (msg.sender == _seller) {
             sellerExercised = _sellerLeg.exercise();
+            Exercise(bytes32(address(_sellerLeg)),
+                     toText(sellerExercised));
         }
 
         if (_sellerLeg._isComplete() && _buyerLeg._isComplete()) {
             _isActive = false;
             _isComplete = true;
+            Exercise(bytes32(address(this)),
+                     toText(true));
         }
         return (buyerExercised && sellerExercised);
     }
@@ -148,8 +182,14 @@ contract CallSpread {
         uint marginAmount = difference * _marginPct / 100;
 
         if (marginAmount > this.balance) {
+            CashFlow(bytes32(address(_sellerAcct)),
+                     bytes32(address(this)),
+                     bytes32(marginAmount - this.balance));
             _sellerAcct.withdraw(marginAmount - this.balance);
         } else if (marginAmount < this.balance) {
+            CashFlow(bytes32(address(this)),
+                     bytes32(address(_sellerAcct)),
+                     bytes32(this.balance - marginAmount));
             _sellerAcct.deposit.value(this.balance - marginAmount)();
         }
 
@@ -159,6 +199,9 @@ contract CallSpread {
     // On maturity, return the escrowed margin to the seller
     function returnMargin() returns (bool) {
         if (_buyerLeg.isMature()) {
+            CashFlow(bytes32(address(this)),
+                     bytes32(address(_sellerAcct)),
+                     bytes32(this.balance));
             return _sellerAcct.deposit.value(this.balance)();
         }
         return false;
