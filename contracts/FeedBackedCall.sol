@@ -1,10 +1,10 @@
 import "std.sol";
-import "oggable.sol";
+import "Loggable.sol";
 import "PriceFeedApi.sol";
 import "TradingAccount.sol";
 
 
-contract FeedBackedCall is nameRegAware, loggable {
+contract FeedBackedCall is nameRegAware, Loggable {
 
     // Contract status
     bool public         _isActive;
