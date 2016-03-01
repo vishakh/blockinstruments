@@ -115,11 +115,13 @@ contract FeedBackedCall is nameRegAware, Loggable {
     // Withdraw and nullify the contract if not validated
     function withdraw() returns (bool) {
         if (_isActive) {
+            GenericLogEvent("Can't withdraw because inactive.");
             return false;
         }
         if (msg.sender != _broker
             && msg.sender != _buyer
             && msg.sender != _seller) {
+            GenericLogEvent("Can't withdraw due to sender.");
             return false;
         }
         // suicide(_broker);
@@ -133,9 +135,11 @@ contract FeedBackedCall is nameRegAware, Loggable {
     // On maturity, allow the buyer to exercise the option
     function exercise() returns (bool) {
         if (msg.sender != _buyer) {
+            GenericLogEvent("exercise: Sender not buyer.");
             return false;
         }
         if (!isMature()) {
+            GenericLogEvent("exercise: Not mature.");
             return false;
         }
 

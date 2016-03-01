@@ -14,7 +14,7 @@ contract TradingAccount is Loggable {
     function TradingAccount() {
         // Track the owner
         _owner = msg.sender;
-        GenericLogEvent("Something happened.");
+        GenericLogEvent("Trading Account Initialized.");
     }
 
     // This is pretty unnecessary because ether can be directly sent
@@ -48,9 +48,11 @@ contract TradingAccount is Loggable {
 
     function authorize(address accountAddr, uint duration) returns (bool) {
         if (tx.origin != _owner) {
+            GenericLogEvent("Auth not sent by account owner.");
             return false;
         }
         if (duration == 0) {
+            GenericLogEvent("Zero duration in auth call.");
             return false;
         }
         AuthPeriod period = _authorized[accountAddr];
