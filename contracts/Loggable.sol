@@ -7,7 +7,7 @@ contract Loggable {
     event Withdrawal(address addr, bytes outcome);
     event Exercise(address addr, bytes outcome);
 
-    event CashFlow(address from, address to, bytes32 amount);
+    event CashFlow(address from, address to, uint amount);
 
     // ===== Utility functions ===== //
 

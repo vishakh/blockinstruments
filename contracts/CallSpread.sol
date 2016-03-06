@@ -188,12 +188,12 @@ contract CallSpread is Loggable {
         if (marginAmount > this.balance) {
             CashFlow(address(_sellerAcct),
                      address(this),
-                     bytes32(marginAmount - this.balance));
+                     marginAmount - this.balance);
             _sellerAcct.withdraw(marginAmount - this.balance);
         } else if (marginAmount < this.balance) {
             CashFlow(address(this),
                      address(_sellerAcct),
-                     bytes32(this.balance - marginAmount));
+                     this.balance - marginAmount);
             _sellerAcct.deposit.value(this.balance - marginAmount)();
         }
 
@@ -205,7 +205,7 @@ contract CallSpread is Loggable {
         if (_buyerLeg.isMature()) {
             CashFlow(address(this),
                      address(_sellerAcct),
-                     bytes32(this.balance));
+                     this.balance);
             return _sellerAcct.deposit.value(this.balance)();
         }
         return false;

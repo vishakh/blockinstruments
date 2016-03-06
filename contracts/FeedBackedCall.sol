@@ -147,7 +147,7 @@ contract FeedBackedCall is nameRegAware, Loggable {
         if (this.balance > 0) {
             CashFlow(address(this),
                      _owner,
-                     bytes32(this.balance));
+                     this.balance);
         }
         _owner.send(this.balance);
 
@@ -155,14 +155,14 @@ contract FeedBackedCall is nameRegAware, Loggable {
         _buyerAcct.withdraw(_strikePrice * _notional);
         CashFlow(address(_buyerAcct),
                  address(_sellerAcct),
-                 bytes32(this.balance));
+                 this.balance);
         _sellerAcct.deposit.value(this.balance)();
 
         // Seller provides the underlier at the spot price
         _sellerAcct.withdraw(getSpotPrice() * _notional);
         CashFlow(address(_sellerAcct),
                  address(_buyerAcct),
-                 bytes32(this.balance));
+                 this.balance);
         _buyerAcct.deposit.value(this.balance)();
 
         _isActive = false;
