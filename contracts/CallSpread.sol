@@ -83,6 +83,7 @@ contract CallSpread is Loggable {
     // The receiver validates the contract with the same parameters
     function validate() returns (bool) {
         if (_isActive || _isComplete) {
+            Error("Validation requires inactive contract");
             return true;
         }
         // Authorize trading account of msg.sender. This is assumed to be
@@ -92,6 +93,7 @@ contract CallSpread is Loggable {
         // Need authorized trading accounts
         if (!_buyerAcct.isAuthorized(this) ||
             !_sellerAcct.isAuthorized(this)) {
+            Error("Validation requires authorized trading accounts");
             return false;
         }
 
@@ -104,6 +106,7 @@ contract CallSpread is Loggable {
         Validation(bytes32(address(_buyerLeg)),
                    toText(buyerValidated));
         if (!buyerValidated) {
+            Error("Validation requires validated buyer leg");
             return false;
         }
 
@@ -111,6 +114,7 @@ contract CallSpread is Loggable {
         Validation(bytes32(address(_sellerLeg)),
                    toText(sellerValidated));
         if (!sellerValidated) {
+            Error("Validation requires validated seller leg");
             return false;
         }
 
@@ -123,11 +127,13 @@ contract CallSpread is Loggable {
     // Withdraw and nullify the contract if not validated
     function withdraw() returns (bool) {
         if (_isActive) {
+            Error("Withdrawal requires inactive contract");
             return false;
         }
         if (msg.sender != _broker
             && msg.sender != _buyer
             && msg.sender != _seller) {
+            Error("Withdrawal must be initiated by participant");
             return false;
         }
         // Withdraw from both legs

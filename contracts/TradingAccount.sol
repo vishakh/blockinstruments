@@ -14,7 +14,6 @@ contract TradingAccount is Loggable {
     function TradingAccount() {
         // Track the owner
         _owner = msg.sender;
-        GenericLogEvent("Trading Account Initialized.");
     }
 
     // This is pretty unnecessary because ether can be directly sent
@@ -26,6 +25,7 @@ contract TradingAccount is Loggable {
             return true;
         } else {
             // Just return the deposit
+            Error("Deposit must be made from authorized account");
             msg.sender.send(msg.value);
             return false;
         }
@@ -35,6 +35,7 @@ contract TradingAccount is Loggable {
         if (amount > this.balance) {
             // Trim the amount to the current balance
             // TODO: should maintain a withdrawal limit
+            Error("Withdrawal amount limited to current account balance");
             amount = this.balance;
         }
         if (msg.sender == _owner || isAuthorized(msg.sender)) {
@@ -48,11 +49,11 @@ contract TradingAccount is Loggable {
 
     function authorize(address accountAddr, uint duration) returns (bool) {
         if (tx.origin != _owner) {
-            GenericLogEvent("Auth not sent by account owner.");
+            Error("Authorization must be initiated by account owner");
             return false;
         }
         if (duration == 0) {
-            GenericLogEvent("Zero duration in auth call.");
+            Error("Authorization requires positive duration");
             return false;
         }
         AuthPeriod period = _authorized[accountAddr];

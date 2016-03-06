@@ -94,6 +94,7 @@ contract FeedBackedCall is nameRegAware, Loggable {
     // Validate the contract in order to activate it
     function validate() returns (bool) {
         if (_isActive || _isComplete) {
+            Error("Validation requires inactive contract");
             return true;
         }
         // Authorize trading account of msg.sender. This is assumed to be
@@ -103,6 +104,7 @@ contract FeedBackedCall is nameRegAware, Loggable {
         // Need authorized trading accounts
         if (!_buyerAcct.isAuthorized(this) ||
             !_sellerAcct.isAuthorized(this)) {
+            Error("Validation requires authorized trading accounts");
             return false;
         }
 
@@ -115,13 +117,13 @@ contract FeedBackedCall is nameRegAware, Loggable {
     // Withdraw and nullify the contract if not validated
     function withdraw() returns (bool) {
         if (_isActive) {
-            GenericLogEvent("Can't withdraw because inactive.");
+            Error("Withdrawal requires inactive contract");
             return false;
         }
         if (msg.sender != _broker
             && msg.sender != _buyer
             && msg.sender != _seller) {
-            GenericLogEvent("Can't withdraw due to sender.");
+            Error("Withdrawal must be initiated by participant");
             return false;
         }
         // suicide(_broker);
@@ -135,11 +137,11 @@ contract FeedBackedCall is nameRegAware, Loggable {
     // On maturity, allow the buyer to exercise the option
     function exercise() returns (bool) {
         if (msg.sender != _buyer) {
-            GenericLogEvent("exercise: Sender not buyer.");
+            Error("Exercise must be initiated by buyer");
             return false;
         }
         if (!isMature()) {
-            GenericLogEvent("exercise: Not mature.");
+            Error("Exercise requires maturity");
             return false;
         }
 
