@@ -11,7 +11,7 @@ contract FeedBackedCall is nameRegAware, Loggable {
     bool public         _isComplete;
 
     // Participating addresses and accounts
-    address public      _broker;
+    address public      _owner;
     address public      _buyer;
     address public      _seller;
     TradingAccount      _buyerAcct;
@@ -28,7 +28,7 @@ contract FeedBackedCall is nameRegAware, Loggable {
     uint public         _startTime;
 
     function FeedBackedCall() {
-        _broker = msg.sender;
+        _owner = msg.sender;
         _isActive = false;
         _isComplete = false;
     }
@@ -49,7 +49,7 @@ contract FeedBackedCall is nameRegAware, Loggable {
         _sellerAcct = TradingAccount(sellerAcct);
         _seller = _sellerAcct._owner();
 
-        // Authorize trading account of msg.sender
+        // Authorize trading account of caller
         authorizeTradingAccounts(_timeToMaturity * 3);
 
         // Underlier feed defaults to "ether-camp/price-feed"
@@ -76,13 +76,13 @@ contract FeedBackedCall is nameRegAware, Loggable {
         bool buyerAuthed = true;
         bool sellerAuthed = true;
 
-        if (msg.sender == _buyer) {
+        if (initiatedBy(_buyer)) {
             buyerAuthed = _buyerAcct.authorize(this,
                                                _timeToMaturity + buffer);
             Authorization(address(_buyerAcct),
                           toText(buyerAuthed));
         }
-        if (msg.sender  == _seller) {
+        if (initiatedBy(_seller)) {
             sellerAuthed = _sellerAcct.authorize(this,
                                                  _timeToMaturity + buffer);
             Authorization(address(_sellerAcct),
@@ -97,7 +97,7 @@ contract FeedBackedCall is nameRegAware, Loggable {
             Error("Validation requires inactive contract");
             return true;
         }
-        // Authorize trading account of msg.sender. This is assumed to be
+        // Authorize trading account of caller. This is assumed to be
         // the counterparty of the initializer of this contract.
         authorizeTradingAccounts(_timeToMaturity * 3);
 
@@ -120,14 +120,12 @@ contract FeedBackedCall is nameRegAware, Loggable {
             Error("Withdrawal requires inactive contract");
             return false;
         }
-        if (msg.sender != _broker
-            && msg.sender != _buyer
-            && msg.sender != _seller) {
+        if (initiatedBy(_buyer) || initiatedBy(_seller)) {
             Error("Withdrawal must be initiated by participant");
             return false;
         }
-        // suicide(_broker);
-        _broker.send(this.balance);
+        // suicide(_owner);
+        _owner.send(this.balance);
         _isComplete = true;
         Withdrawal(address(this),
                    toText(true));
@@ -136,7 +134,7 @@ contract FeedBackedCall is nameRegAware, Loggable {
 
     // On maturity, allow the buyer to exercise the option
     function exercise() returns (bool) {
-        if (msg.sender != _buyer) {
+        if (!initiatedBy(_buyer)) {
             Error("Exercise must be initiated by buyer");
             return false;
         }
@@ -145,13 +143,13 @@ contract FeedBackedCall is nameRegAware, Loggable {
             return false;
         }
 
-        // The broker first mops up any unclaimed balance
+        // The contract owner first mops up any unclaimed balance
         if (this.balance > 0) {
             CashFlow(address(this),
-                     _broker,
+                     _owner,
                      bytes32(this.balance));
         }
-        _broker.send(this.balance);
+        _owner.send(this.balance);
 
         // Buyer claims the underlier at the strike price
         _buyerAcct.withdraw(_strikePrice * _notional);
@@ -202,5 +200,10 @@ contract FeedBackedCall is nameRegAware, Loggable {
 
     function getValue() returns (int) {
         return (int(getSpotPrice()) - int(_strikePrice)) * int(_notional);
+    }
+
+    function initiatedBy(address addr) returns (bool) {
+        return msg.sender == addr ||
+               (tx.origin == addr && msg.sender == _owner);
     }
 }

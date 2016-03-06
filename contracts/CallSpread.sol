@@ -10,7 +10,7 @@ contract CallSpread is Loggable {
     bool public             _isComplete;
 
     // Participating addresses and accounts
-    address public          _broker;
+    address public          _owner;
     address public          _buyer;
     address public          _seller;
     TradingAccount          _buyerAcct;
@@ -25,7 +25,7 @@ contract CallSpread is Loggable {
     uint public             _maxTimeToMaturity;
 
     function CallSpread() {
-        _broker = msg.sender;
+        _owner = msg.sender;
         _isActive = false;
         _isComplete = false;
     }
@@ -56,7 +56,7 @@ contract CallSpread is Loggable {
         _sellerAcct = TradingAccount(sellerAcct);
         _seller = _sellerAcct._owner();
 
-        // Authorize trading account of msg.sender
+        // Authorize trading account of caller
         authorizeTradingAccounts(_maxTimeToMaturity * 3);
     }
 
@@ -65,13 +65,13 @@ contract CallSpread is Loggable {
         bool buyerAuthed = true;
         bool sellerAuthed = true;
 
-        if (msg.sender == _buyer) {
+        if (initiatedBy(_buyer)) {
             buyerAuthed = _buyerAcct.authorize(this,
                                                _maxTimeToMaturity + buffer);
             Authorization(address(_buyerAcct),
                           toText(buyerAuthed));
         }
-        if (msg.sender  == _seller) {
+        if (initiatedBy(_seller)) {
             sellerAuthed = _sellerAcct.authorize(this,
                                                  _maxTimeToMaturity + buffer);
             Authorization(address(_sellerAcct),
@@ -86,7 +86,7 @@ contract CallSpread is Loggable {
             Error("Validation requires inactive contract");
             return true;
         }
-        // Authorize trading account of msg.sender. This is assumed to be
+        // Authorize trading account of caller. This is assumed to be
         // the counterparty of the initializer of this contract.
         authorizeTradingAccounts(_maxTimeToMaturity * 3);
 
@@ -130,9 +130,7 @@ contract CallSpread is Loggable {
             Error("Withdrawal requires inactive contract");
             return false;
         }
-        if (msg.sender != _broker
-            && msg.sender != _buyer
-            && msg.sender != _seller) {
+        if (initiatedBy(_buyer) || initiatedBy(_seller)) {
             Error("Withdrawal must be initiated by participant");
             return false;
         }
@@ -145,8 +143,8 @@ contract CallSpread is Loggable {
         Withdrawal(address(_sellerLeg),
                    toText(sellerWithdrawn));
 
-        // suicide(_broker);
-        _broker.send(this.balance);
+        // suicide(_owner);
+        _owner.send(this.balance);
         _isComplete = true;
         Withdrawal(address(this),
                    toText(true));
@@ -158,13 +156,13 @@ contract CallSpread is Loggable {
         bool buyerExercised = true;
         bool sellerExercised = true;
 
-        if (msg.sender == _buyer) {
+        if (initiatedBy(_buyer)) {
             returnMargin();
             buyerExercised = _buyerLeg.exercise();
             Exercise(address(_buyerLeg),
                      toText(buyerExercised));
         }
-        if (msg.sender == _seller) {
+        if (initiatedBy(_seller)) {
             sellerExercised = _sellerLeg.exercise();
             Exercise(address(_sellerLeg),
                      toText(sellerExercised));
@@ -217,5 +215,10 @@ contract CallSpread is Loggable {
 
     function ping() returns (bool) {
         return rebalanceMargin();
+    }
+
+    function initiatedBy(address addr) returns (bool) {
+        return msg.sender == addr ||
+               (tx.origin == addr && msg.sender == _owner);
     }
 }
