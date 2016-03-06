@@ -2,20 +2,20 @@ contract Loggable {
 
     event Error(bytes message);
 
-    event Authorization(bytes32 addr, bytes32 success);
-    event Validation(bytes32 addr, bytes32 success);
-    event Withdrawal(bytes32 addr, bytes32 success);
-    event Exercise(bytes32 addr, bytes32 success);
+    event Authorization(address addr, bytes outcome);
+    event Validation(address addr, bytes outcome);
+    event Withdrawal(address addr, bytes outcome);
+    event Exercise(address addr, bytes outcome);
 
-    event CashFlow(bytes32 from, bytes32 to, bytes32 amount);
+    event CashFlow(address from, address to, bytes32 amount);
 
     // ===== Utility functions ===== //
 
-    function toText(bool flag) returns (bytes32) {
+    function toText(bool flag) returns (bytes) {
         if (flag) {
-            return "succeeded";
+            return "SUCCESS";
         } else {
-            return "failed";
+            return "FAILURE";
         }
     }
 }

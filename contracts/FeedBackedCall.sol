@@ -79,13 +79,13 @@ contract FeedBackedCall is nameRegAware, Loggable {
         if (msg.sender == _buyer) {
             buyerAuthed = _buyerAcct.authorize(this,
                                                _timeToMaturity + buffer);
-            Authorization(bytes32(address(_buyerAcct)),
+            Authorization(address(_buyerAcct),
                           toText(buyerAuthed));
         }
         if (msg.sender  == _seller) {
             sellerAuthed = _sellerAcct.authorize(this,
                                                  _timeToMaturity + buffer);
-            Authorization(bytes32(address(_sellerAcct)),
+            Authorization(address(_sellerAcct),
                           toText(sellerAuthed));
         }
         return (buyerAuthed && sellerAuthed);
@@ -109,7 +109,7 @@ contract FeedBackedCall is nameRegAware, Loggable {
         }
 
         _isActive = true;
-        Validation(bytes32(address(this)),
+        Validation(address(this),
                    toText(true));
         return true;
     }
@@ -129,7 +129,7 @@ contract FeedBackedCall is nameRegAware, Loggable {
         // suicide(_broker);
         _broker.send(this.balance);
         _isComplete = true;
-        Withdrawal(bytes32(address(this)),
+        Withdrawal(address(this),
                    toText(true));
         return true;
     }
@@ -147,29 +147,29 @@ contract FeedBackedCall is nameRegAware, Loggable {
 
         // The broker first mops up any unclaimed balance
         if (this.balance > 0) {
-            CashFlow(bytes32(address(this)),
-                     bytes32(_broker),
+            CashFlow(address(this),
+                     _broker,
                      bytes32(this.balance));
         }
         _broker.send(this.balance);
 
         // Buyer claims the underlier at the strike price
         _buyerAcct.withdraw(_strikePrice * _notional);
-        CashFlow(bytes32(address(_buyerAcct)),
-                 bytes32(address(_sellerAcct)),
+        CashFlow(address(_buyerAcct),
+                 address(_sellerAcct),
                  bytes32(this.balance));
         _sellerAcct.deposit.value(this.balance)();
 
         // Seller provides the underlier at the spot price
         _sellerAcct.withdraw(getSpotPrice() * _notional);
-        CashFlow(bytes32(address(_sellerAcct)),
-                 bytes32(address(_buyerAcct)),
+        CashFlow(address(_sellerAcct),
+                 address(_buyerAcct),
                  bytes32(this.balance));
         _buyerAcct.deposit.value(this.balance)();
 
         _isActive = false;
         _isComplete = true;
-        Exercise(bytes32(address(this)),
+        Exercise(address(this),
                  toText(true));
         return true;
     }

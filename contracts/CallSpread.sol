@@ -68,13 +68,13 @@ contract CallSpread is Loggable {
         if (msg.sender == _buyer) {
             buyerAuthed = _buyerAcct.authorize(this,
                                                _maxTimeToMaturity + buffer);
-            Authorization(bytes32(address(_buyerAcct)),
+            Authorization(address(_buyerAcct),
                           toText(buyerAuthed));
         }
         if (msg.sender  == _seller) {
             sellerAuthed = _sellerAcct.authorize(this,
                                                  _maxTimeToMaturity + buffer);
-            Authorization(bytes32(address(_sellerAcct)),
+            Authorization(address(_sellerAcct),
                           toText(sellerAuthed));
         }
         return (buyerAuthed && sellerAuthed);
@@ -103,7 +103,7 @@ contract CallSpread is Loggable {
 //        }
 
         bool buyerValidated = _buyerLeg.validate();
-        Validation(bytes32(address(_buyerLeg)),
+        Validation(address(_buyerLeg),
                    toText(buyerValidated));
         if (!buyerValidated) {
             Error("Validation requires validated buyer leg");
@@ -111,7 +111,7 @@ contract CallSpread is Loggable {
         }
 
         bool sellerValidated = _sellerLeg.validate();
-        Validation(bytes32(address(_sellerLeg)),
+        Validation(address(_sellerLeg),
                    toText(sellerValidated));
         if (!sellerValidated) {
             Error("Validation requires validated seller leg");
@@ -119,7 +119,7 @@ contract CallSpread is Loggable {
         }
 
         _isActive = true;
-        Validation(bytes32(address(this)),
+        Validation(address(this),
                    toText(true));
         return true;
     }
@@ -138,17 +138,17 @@ contract CallSpread is Loggable {
         }
         // Withdraw from both legs
         bool buyerWithdrawn = _buyerLeg.withdraw();
-        Withdrawal(bytes32(address(_buyerLeg)),
+        Withdrawal(address(_buyerLeg),
                    toText(buyerWithdrawn));
 
         bool sellerWithdrawn = _sellerLeg.withdraw();
-        Withdrawal(bytes32(address(_sellerLeg)),
+        Withdrawal(address(_sellerLeg),
                    toText(sellerWithdrawn));
 
         // suicide(_broker);
         _broker.send(this.balance);
         _isComplete = true;
-        Withdrawal(bytes32(address(this)),
+        Withdrawal(address(this),
                    toText(true));
         return true;
     }
@@ -161,19 +161,19 @@ contract CallSpread is Loggable {
         if (msg.sender == _buyer) {
             returnMargin();
             buyerExercised = _buyerLeg.exercise();
-            Exercise(bytes32(address(_buyerLeg)),
+            Exercise(address(_buyerLeg),
                      toText(buyerExercised));
         }
         if (msg.sender == _seller) {
             sellerExercised = _sellerLeg.exercise();
-            Exercise(bytes32(address(_sellerLeg)),
+            Exercise(address(_sellerLeg),
                      toText(sellerExercised));
         }
 
         if (_sellerLeg._isComplete() && _buyerLeg._isComplete()) {
             _isActive = false;
             _isComplete = true;
-            Exercise(bytes32(address(this)),
+            Exercise(address(this),
                      toText(true));
         }
         return (buyerExercised && sellerExercised);
@@ -188,13 +188,13 @@ contract CallSpread is Loggable {
         uint marginAmount = difference * _marginPct / 100;
 
         if (marginAmount > this.balance) {
-            CashFlow(bytes32(address(_sellerAcct)),
-                     bytes32(address(this)),
+            CashFlow(address(_sellerAcct),
+                     address(this),
                      bytes32(marginAmount - this.balance));
             _sellerAcct.withdraw(marginAmount - this.balance);
         } else if (marginAmount < this.balance) {
-            CashFlow(bytes32(address(this)),
-                     bytes32(address(_sellerAcct)),
+            CashFlow(address(this),
+                     address(_sellerAcct),
                      bytes32(this.balance - marginAmount));
             _sellerAcct.deposit.value(this.balance - marginAmount)();
         }
@@ -205,8 +205,8 @@ contract CallSpread is Loggable {
     // On maturity, return the escrowed margin to the seller
     function returnMargin() returns (bool) {
         if (_buyerLeg.isMature()) {
-            CashFlow(bytes32(address(this)),
-                     bytes32(address(_sellerAcct)),
+            CashFlow(address(this),
+                     address(_sellerAcct),
                      bytes32(this.balance));
             return _sellerAcct.deposit.value(this.balance)();
         }
