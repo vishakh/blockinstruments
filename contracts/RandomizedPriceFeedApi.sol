@@ -1,7 +1,6 @@
 import "PriceFeedApi.sol";
-import "Loggable.sol";
 
-contract RandomizedPriceFeedApi is PriceFeedApi, Loggable {
+contract RandomizedPriceFeedApi is PriceFeedApi {
 
     // Timestamp when the prices were last updated.
     uint public _lastUpdateTime;
