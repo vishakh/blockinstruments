@@ -12,12 +12,13 @@ self.addEventListener('message', function(e)
     switch (data.cmd)
     {
         case 'start':
-            self.postMessage('Pinging ' + data.num_pings + " times every " + data.ping_interval + "ms.");
+            self.postMessage({type: "log", text: 'Pinging ' + data.num_pings + " times every " + data.ping_interval + "ms."});
             for(i=0; i<data.num_pings; i++)
             {
                 sleep(data.ping_interval);
                 d = new Date();
-                self.postMessage('PING #' + i +' @ '+ d.toLocaleTimeString());
+                self.postMessage({type: "log", text: 'PING #' + i +' @ '+ d.toLocaleTimeString()});
+                self.postMessage({type: "ping"});
             }
             break;
 

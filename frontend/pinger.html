@@ -9,6 +9,8 @@
     <script>
         function start() {
 
+            document.getElementById('result').textContent = "";
+
             var numPings    = document.getElementById('num_pings').value;
             var pi          = document.getElementById('ping_interval').value;
             var abi         = document.getElementById('abi').value;
@@ -27,29 +29,36 @@
 
         var worker = new Worker('pinger.js');
         worker.addEventListener('message', function(e) {
-            var result = document.getElementById('result').textContent;
-            document.getElementById('result').textContent = result + e.data + " ";
-            myContractInstance.ping.call(
-                    {from: web3.eth.coinbase, value: 0, gas: 2000000},
-                    function(err, result){
-                        console.log("error: " + err);
-                        console.log("result: "+ result)
-                        console.log("Call is done.");
-                    });
-            myContractInstance.ping.sendTransaction(
-                    {from: web3.eth.coinbase, value: 0, gas: 2000000},
-                    function(err, result){
-                        console.log("error: " + err);
-                        console.log("result: "+ result)
-                        console.log("Transaction is done.");
-                        console.log("*****");
-                    });
+            switch(e.data.type)
+            {
+                case 'log':
+                    var result = document.getElementById('result').textContent;
+                    document.getElementById('result').textContent = result + e.data.text + " ";
+                    break;
+                case 'ping':
+                    myContractInstance.ping.call(
+                            {from: web3.eth.coinbase, value: 0, gas: 2000000},
+                            function(err, result){
+                                console.log("Call error: " + err);
+                                console.log("Call result: "+ result)
+                                console.log("Call is done.");
+                            });
+                    myContractInstance.ping.sendTransaction(
+                            {from: web3.eth.coinbase, value: 0, gas: 2000000},
+                            function(err, result){
+                                console.log("Transaction error: " + err);
+                                console.log("Transaction result: "+ result)
+                                console.log("Transaction is done.");
+                                console.log("*****");
+                            });
+                    break;
+            }
         }, false);
     </script>
 </head>
 
 <body>
-    <h1>Contract Poker</h1>
+    <h1>Contract Pinger</h1>
     <p>Contract address:</p>
     <input type="text" id="contract_address" size="40" value="0x4e21c4df06e9f6f7dcb9519ad84a68b787a88a38" />
     <p>ABI</p>
