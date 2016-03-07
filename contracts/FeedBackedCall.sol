@@ -39,7 +39,7 @@ contract FeedBackedCall is nameRegAware, Loggable {
         address buyerAcct,
         address feedProvider,
         bytes32 feedName,
-        uint    strikeToMarketRatioPct,
+        uint    strikePctOfMarketValue,
         uint    notional,
         uint    timeToMaturity) returns (bool) {
 
@@ -61,7 +61,7 @@ contract FeedBackedCall is nameRegAware, Loggable {
         _feedName = feedName;
 
         // Strike price defined relative to market price
-        _strikePrice =  getSpotPrice() * strikeToMarketRatioPct / 100;
+        _strikePrice =  getSpotPrice() * strikePctOfMarketValue / 100;
         _notional = notional;
 
         // Maturity relative to current timestamp and denominated in minutes
@@ -202,7 +202,7 @@ contract FeedBackedCall is nameRegAware, Loggable {
         return (int(getSpotPrice()) - int(_strikePrice)) * int(_notional);
     }
 
-    function initiatedBy(address addr) returns (bool) {
+    function initiatedBy(address addr) private returns (bool) {
         return msg.sender == addr ||
                (tx.origin == addr && msg.sender == _owner);
     }

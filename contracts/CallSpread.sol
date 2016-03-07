@@ -33,13 +33,23 @@ contract CallSpread is Loggable {
     function initialize(
         address sellerAcct,
         address buyerAcct,
-        address sellerLeg,
-        address buyerLeg,
+        address feedProvider,
+        bytes32 feedName,
+        uint    sellerStrikePctOfMarketValue,
+        uint    buyerStrikePctOfMarketValue,
+        uint    notional,
+        uint    timeToMaturity,
         uint    marginPct) returns (bool) {
 
-        // TODO: spawn legs directly from this contract
-        _buyerLeg = FeedBackedCall(buyerLeg);
-        _sellerLeg = FeedBackedCall(sellerLeg);
+        // Spawn mirrored call options with the same underlier and notional
+        _sellerLeg = new FeedBackedCall();
+        _sellerLeg.initialize(sellerAcct, buyerAcct, feedProvider, feedName,
+                              sellerStrikePctOfMarketValue, notional,
+                              timeToMaturity);
+        _buyerLeg = new FeedBackedCall();
+        _buyerLeg.initialize(buyerAcct, sellerAcct, feedProvider, feedName,
+                             buyerStrikePctOfMarketValue, notional,
+                             timeToMaturity);
 
         // Percentage difference in value of the legs to be held in escrow
         _marginPct = marginPct;
@@ -217,7 +227,15 @@ contract CallSpread is Loggable {
         return rebalanceMargin();
     }
 
-    function initiatedBy(address addr) returns (bool) {
+    function getSellerOption() returns (address) {
+        return address(_sellerLeg);
+    }
+
+    function getBuyerOption() returns (address) {
+        return address(_buyerLeg);
+    }
+
+    function initiatedBy(address addr) private returns (bool) {
         return msg.sender == addr ||
                (tx.origin == addr && msg.sender == _owner);
     }
