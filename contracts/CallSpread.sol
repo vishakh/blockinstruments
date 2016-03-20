@@ -26,7 +26,7 @@ contract CallSpread is owned, mortal, loggable {
     uint public             _maxTimeToMaturity;
 
     function CallSpread() {
-        _owner = msg.sender;
+        // _owner = msg.sender;
         _isActive = false;
         _isComplete = false;
     }

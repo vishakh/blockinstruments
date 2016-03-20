@@ -28,7 +28,7 @@ contract FeedBackedCall is owned, nameRegAware, mortal, loggable {
     uint public         _startTime;
 
     function FeedBackedCall() {
-        _owner = msg.sender;
+        // _owner = msg.sender;
         _isActive = false;
         _isComplete = false;
     }
