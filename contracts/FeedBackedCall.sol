@@ -11,7 +11,6 @@ contract FeedBackedCall is owned, nameRegAware, loggable {
     bool public         _isComplete;
 
     // Participating addresses and accounts
-    address public      _owner;
     address public      _buyer;
     address public      _seller;
     TradingAccount      _buyerAcct;
@@ -28,7 +27,6 @@ contract FeedBackedCall is owned, nameRegAware, loggable {
     uint public         _startTime;
 
     function FeedBackedCall() {
-        // _owner = msg.sender;
         _isActive = false;
         _isComplete = false;
     }

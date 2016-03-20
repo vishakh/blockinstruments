@@ -8,14 +8,10 @@ contract TradingAccount is owned, loggable {
         uint        startTime;
     }
 
-    address                         public _owner;
     mapping(address => AuthPeriod)  public _authorized;
     address[]                       public _addresses;
 
-    function TradingAccount() {
-        // Track the owner
-        // _owner = msg.sender;
-    }
+    function TradingAccount() {}
 
     // This is pretty unnecessary because ether can be directly sent
     // to this contract. We include additional authentication for

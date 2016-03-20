@@ -11,7 +11,6 @@ contract CallSpread is owned, loggable {
     bool public             _isComplete;
 
     // Participating addresses and accounts
-    address public          _owner;
     address public          _buyer;
     address public          _seller;
     TradingAccount          _buyerAcct;
@@ -26,7 +25,6 @@ contract CallSpread is owned, loggable {
     uint public             _maxTimeToMaturity;
 
     function CallSpread() {
-        // _owner = msg.sender;
         _isActive = false;
         _isComplete = false;
     }
