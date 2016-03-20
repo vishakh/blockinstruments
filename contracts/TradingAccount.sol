@@ -1,6 +1,7 @@
+import "std.sol";
 import "Loggable.sol";
 
-contract TradingAccount is Loggable {
+contract TradingAccount is owned, mortal, loggable {
 
     struct AuthPeriod {
         uint        duration;       // currently in minutes
@@ -13,7 +14,7 @@ contract TradingAccount is Loggable {
 
     function TradingAccount() {
         // Track the owner
-        _owner = msg.sender;
+        // _owner = msg.sender;
     }
 
     // This is pretty unnecessary because ether can be directly sent

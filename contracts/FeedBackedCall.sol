@@ -4,7 +4,7 @@ import "PriceFeedApi.sol";
 import "TradingAccount.sol";
 
 
-contract FeedBackedCall is nameRegAware, Loggable {
+contract FeedBackedCall is owned, nameRegAware, mortal, loggable {
 
     // Contract status
     bool public         _isActive;

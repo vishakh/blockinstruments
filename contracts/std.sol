@@ -1,27 +1,36 @@
-// This si marker
-// for contract not
-// to be deployed to
-// any environment
+// This is a marker for a contract not
+// to be deployed to any environment
 contract abstract {}
 
+
 contract owned is abstract {
-  address owner;
+  address public _owner;
+
   function owned() {
-    owner = msg.sender;
+    _owner = msg.sender;
   }
   function changeOwner(address newOwner) onlyowner {
-    owner = newOwner;
+    _owner = newOwner;
   }
+  function claim() viaowner {
+    _owner = msg.sender;
+  }
+
   modifier onlyowner() {
-    if (msg.sender==owner) _
+    if (msg.sender == _owner) _
+  }
+  modifier viaowner() {
+    if (tx.origin == _owner && owned(msg.sender)._owner() == _owner) _
   }
 }
+
 
 contract mortal is abstract, owned {
   function kill() onlyowner {
-    if (msg.sender == owner) suicide(owner);
+    if (msg.sender == _owner) suicide(_owner);
   }
 }
+
 
 contract NameReg is abstract {
   function register(bytes32 name) {}
@@ -30,6 +39,7 @@ contract NameReg is abstract {
   function nameOf(address addr) constant returns (bytes32 name) {}
   function kill() {}
 }
+
 
 contract nameRegAware is abstract {
   function nameRegAddress() returns (address) {
@@ -41,11 +51,13 @@ contract nameRegAware is abstract {
   }
 }
 
+
 contract named is abstract, nameRegAware {
   function named(bytes32 name) {
     NameReg(nameRegAddress()).register(name);
   }
 }
+
 
 // contract with util functions
 contract util is abstract {

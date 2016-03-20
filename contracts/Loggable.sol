@@ -1,4 +1,4 @@
-contract Loggable {
+contract loggable {
 
     event Error(bytes message);
 

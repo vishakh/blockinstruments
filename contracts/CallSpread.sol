@@ -1,9 +1,10 @@
+import "std.sol";
 import "Loggable.sol";
 import "FeedBackedCall.sol";
 import "TradingAccount.sol";
 
 
-contract CallSpread is Loggable {
+contract CallSpread is owned, mortal, loggable {
 
     // Contract status
     bool public             _isActive;
@@ -47,11 +48,13 @@ contract CallSpread is Loggable {
         // NOTE: disabled because of gas cost
         // _sellerLeg = new FeedBackedCall();
         _sellerLeg = FeedBackedCall(sellerLeg);
+        _sellerLeg.claim();
         _sellerLeg.initialize(sellerAcct, buyerAcct, feedProvider, feedName,
                               sellerStrikePctOfMarketValue, notional,
                               timeToMaturity);
         // _buyerLeg = new FeedBackedCall();
         _buyerLeg = FeedBackedCall(buyerLeg);
+        _buyerLeg.claim();
         _buyerLeg.initialize(buyerAcct, sellerAcct, feedProvider, feedName,
                              buyerStrikePctOfMarketValue, notional,
                              timeToMaturity);
