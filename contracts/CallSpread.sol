@@ -33,6 +33,8 @@ contract CallSpread is Loggable {
     function initialize(
         address sellerAcct,
         address buyerAcct,
+        address sellerLeg,
+        address buyerLeg,
         address feedProvider,
         bytes32 feedName,
         uint    sellerStrikePctOfMarketValue,
@@ -42,11 +44,14 @@ contract CallSpread is Loggable {
         uint    marginPct) returns (bool) {
 
         // Spawn mirrored call options with the same underlier and notional
-        _sellerLeg = new FeedBackedCall();
+        // NOTE: disabled because of gas cost
+        // _sellerLeg = new FeedBackedCall();
+        _sellerLeg = FeedBackedCall(sellerLeg);
         _sellerLeg.initialize(sellerAcct, buyerAcct, feedProvider, feedName,
                               sellerStrikePctOfMarketValue, notional,
                               timeToMaturity);
-        _buyerLeg = new FeedBackedCall();
+        // _buyerLeg = new FeedBackedCall();
+        _buyerLeg = FeedBackedCall(buyerLeg);
         _buyerLeg.initialize(buyerAcct, sellerAcct, feedProvider, feedName,
                              buyerStrikePctOfMarketValue, notional,
                              timeToMaturity);
