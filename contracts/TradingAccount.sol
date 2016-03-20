@@ -1,7 +1,7 @@
 import "std.sol";
 import "Loggable.sol";
 
-contract TradingAccount is owned, mortal, loggable {
+contract TradingAccount is owned, loggable {
 
     struct AuthPeriod {
         uint        duration;       // currently in minutes

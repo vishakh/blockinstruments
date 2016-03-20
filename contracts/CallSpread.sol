@@ -4,7 +4,7 @@ import "FeedBackedCall.sol";
 import "TradingAccount.sol";
 
 
-contract CallSpread is owned, mortal, loggable {
+contract CallSpread is owned, loggable {
 
     // Contract status
     bool public             _isActive;
