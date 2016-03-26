@@ -47,9 +47,6 @@ contract FeedBackedCall is owned, nameRegAware, loggable {
         _sellerAcct = TradingAccount(sellerAcct);
         _seller = _sellerAcct._owner();
 
-        // Authorize trading account of caller
-        authorizeTradingAccounts(_timeToMaturity * 3);
-
         // Underlier feed defaults to "ether-camp/price-feed"
         if (feedProvider == 0) {
             _underlier = PriceFeedApi(named("ether-camp/price-feed"));
@@ -65,6 +62,9 @@ contract FeedBackedCall is owned, nameRegAware, loggable {
         // Maturity relative to current timestamp and denominated in minutes
         _timeToMaturity = timeToMaturity;
         _startTime = block.timestamp;
+
+        // Authorize trading account of caller
+        authorizeTradingAccounts(_timeToMaturity * 3);
 
         return true;
     }
@@ -173,7 +173,7 @@ contract FeedBackedCall is owned, nameRegAware, loggable {
     // ===== Utility functions ===== //
 
     function isMature() returns (bool) {
-        uint timeElapsed = (block.timestamp - _startTime) / 60;
+        uint timeElapsed = block.timestamp - _startTime;
         if (timeElapsed >= _timeToMaturity) {
             return true;
         } else {
