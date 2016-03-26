@@ -51,9 +51,19 @@ contract RandomizedPriceFeedApi is PriceFeedApi {
     // Returns the price of an asset, represented as an uint equal to
     // (double price) * 1000000
     function getPrice(bytes32 symbol) returns(uint currPrice) {
-        uint price = _prices[symbol];
+        return _prices[symbol];
+    }
 
-        // Randomly modify the price with each check
+    // Returns the timestamp of the latest price for an asset.
+    // Normally this is the exchange timestamp, but if the exchange
+    // doesn't supply such info the latest data retrieval time is returned.
+    function getTimestamp(bytes32 symbol) returns (uint timestamp) {
+        return _timestamps[symbol];
+    }
+
+    // Randomly modify the price for a given symbol.
+    function perturb(bytes32 symbol) returns(bool) {
+        uint price = _prices[symbol];
         uint shift = price / 10;
         if (block.number % 2 == 0) {
             price = price + shift;
@@ -64,13 +74,11 @@ contract RandomizedPriceFeedApi is PriceFeedApi {
         _prices[symbol] = price;
         _timestamps[symbol] = block.timestamp;
         _lastUpdateTime = block.timestamp;
-        return price;
+        return true;
     }
 
-    // Returns the timestamp of the latest price for an asset.
-    // Normally this is the exchange timestamp, but if the exchange
-    // doesn't supply such info the latest data retrieval time is returned.
-    function getTimestamp(bytes32 symbol) returns (uint timestamp) {
-        return _timestamps[symbol];
+    // Lets an external agent randomly perturb values as desired.
+    function ping() returns (bool) {
+        return perturb("USD_ETH");
     }
 }
