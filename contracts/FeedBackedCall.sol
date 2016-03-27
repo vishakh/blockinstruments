@@ -146,8 +146,8 @@ contract FeedBackedCall is owned, nameRegAware, loggable {
             CashFlow(address(this),
                      _owner,
                      this.balance);
+            _owner.send(this.balance);
         }
-        _owner.send(this.balance);
 
         // Buyer claims the underlier at the strike price
         _buyerAcct.withdraw(_strikePrice * _notional);
